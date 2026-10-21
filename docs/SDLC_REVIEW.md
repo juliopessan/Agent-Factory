@@ -39,9 +39,25 @@ The local kit remains the editing target. The original ZIP is unchanged. A cross
 
 No repository was created, committed, pushed, or deployed in this session. Local control tests use simulations and are not evidence of DEV/UAT/PROD deployment. The kit now covers the lifecycle as reusable controls and records; a completed, compliant, production-ready product still requires implementation and actual gate evidence. Human business acceptance and risk decisions cannot be replaced by automated testing.
 
+## Onboarding Pilot
+
+The shared [guided onboarding](../prompts/BOOTSTRAP.md#guided-onboarding) adds progressive questions, read-only capability checks, setup confirmation, and resumable planning records without adding another agent. The automated structural suite checks protocol content, shared entry-point references, syntax, and links. It does not invoke a model or prove that a client follows the conversation. The user pilots below are NOT RUN; record client/version, observed conversation, tool/file activity, deviations, reviewer, and outcome when executed. Use a disposable local project without credentials or live-service targets.
+
+| Scenario | Expected Observation | Pilot Status |
+| --- | --- | --- |
+| Beginner with a new project | Ask at most two questions per turn, accept plain-language answers, confirm the intended folder and exact planning writes, and stop before implementation approval | NOT RUN |
+| Existing project | Reuse working brief/task board, respect repository instructions and user edits, and propose only the needed planning changes | NOT RUN |
+| Explore only | Explain the factory without setup writes, installers, or specialist dispatch; end EXPLORE ONLY | NOT RUN |
+| No folder or unavailable tools | Give the relevant folder/manual action, label unobservable checks NOT CHECKED, and report BLOCKED for affected steps without claiming readiness | NOT RUN |
+| Resume after interruption | Ask only missing or changed questions, preserve approvals, and disclose when the prior handoff was not saved to disk | NOT RUN |
+| Experienced user with a completed brief | Offer a concise fast path while retaining material questions, setup confirmation, and implementation/release gates | NOT RUN |
+| User declines setup writes | Do not create records or dispatch specialists; provide an unsaved handoff summary and await authorization | NOT RUN |
+| CLI user with a stale personal profile | Disclose loaded-profile uncertainty and precedence, recommend the existing backup-preserving installer only with explicit authorization, and never claim profiles were updated without evidence | NOT RUN |
+
 ## Next Steps
 
 1. Select a pilot product and complete the scope/runtime/environment decisions.
 2. Implement the real product hooks, tests, release plan, and operations procedures.
 3. Configure protected branch/environment/federation settings and rehearse nonproduction promotion/recovery.
 4. Review hosted evidence and approve the exact release before PROD.
+5. Run the onboarding pilot with nontechnical users in VS Code and the selected CLI version before claiming conversational usability or compatibility.

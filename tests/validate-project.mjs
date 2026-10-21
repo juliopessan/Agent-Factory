@@ -71,4 +71,24 @@ for (const path of files.filter(path => path.endsWith('.agent.md') || path.endsW
   assert.equal(document.errors.length, 0, `${path}: invalid frontmatter`);
   assert(document.toJS().description, `${path}: missing description`);
 }
-console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, Markdown tables/fences, and ${localLinks} local links.`);
+const bootstrap = readFileSync(join(root, 'prompts/BOOTSTRAP.md'), 'utf8');
+const onboardingStart = bootstrap.indexOf('## Guided Onboarding');
+const planningStart = bootstrap.indexOf('## Planning Workflow');
+assert(onboardingStart >= 0 && planningStart > onboardingStart, 'Onboarding must precede planning');
+const onboarding = bootstrap.slice(onboardingStart, planningStart);
+for (const requirement of [
+  'one or two questions per turn', 'just explore is read-only', 'What would you like to create or improve',
+  'File > Open Folder', 'temporary ZIP extraction', 'VERIFIED', 'MISSING', 'NOT CHECKED',
+  'VS Code chat for beginners', 'Copilot CLI as an advanced alternative',
+  'Never request passwords, tokens, private keys, or production secrets',
+  'Wait for explicit confirmation of those writes', 'PROJECT_BRIEF and TASK_BOARD',
+  'progress was not saved to disk', 'EXPLORE ONLY', 'BLOCKED', 'READY FOR PLANNING',
+  'fast path', 'not that architecture, implementation, or release is approved',
+]) assert(onboarding.includes(requirement), `Missing onboarding contract: ${requirement}`);
+for (const entry of ['.github/agents/chief-of-staff.agent.md', '.github/prompts/BOOTSTRAP.prompt.md']) {
+  const content = readFileSync(join(root, entry), 'utf8');
+  assert(content.includes('../../prompts/BOOTSTRAP.md#guided-onboarding'), `${entry}: missing shared onboarding`);
+  assert(content.includes('one or two questions per turn'), `${entry}: missing progressive conversation`);
+}
+assert(bootstrap.includes('For EXPLORE ONLY or BLOCKED, do not execute the steps below.'), 'Planning must remain gated');
+console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding contracts, Markdown tables/fences, and ${localLinks} local links. Conversational behavior was not evaluated.`);

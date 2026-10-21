@@ -1,13 +1,13 @@
 ---
 name: "factory-bootstrap"
-description: "Start software factory discovery and prepare architecture, contracts, ownership, and an implementation plan for human approval."
+description: "Start guided onboarding for beginners or resume factory setup, then prepare architecture, contracts, ownership, and a plan for human approval."
 agent: "Chief of Staff"
-argument-hint: "Provide a completed project brief or describe the product, users, constraints, and Must Haves."
+argument-hint: "Describe what you want to create or improve, ask to explore, or provide a completed brief for the fast path."
 ---
 
-Start the GitHub Copilot Agent Factory planning phase for this repository.
+Start the GitHub Copilot Agent Factory with [Guided Onboarding](../../prompts/BOOTSTRAP.md#guided-onboarding), the shared conversation for chat and CLI. Follow it before the planning instructions below: ask one or two questions per turn, reuse answers, confirm the actual working folder, inspect prerequisites read-only, and wait for confirmation of the planning write set. For EXPLORE ONLY or BLOCKED, stop before file writes or delegation. A completed brief enables the fast path, not an approval bypass. Never request credentials or silently install tools. Onboarding does not authorize implementation or deployment.
 
-Read the [operating rules](../copilot-instructions.md) and the [project brief template](../../templates/PROJECT_BRIEF.md), preferring an existing working brief under `docs/factory/` when present. Preserve existing files and instructions. If no completed brief exists, ask only blocking questions and record explicit assumptions for other unknowns.
+After READY FOR PLANNING, read the [operating rules](../copilot-instructions.md) and the [project brief template](../../templates/PROJECT_BRIEF.md), preferring an existing working brief under `docs/factory/` when present. Preserve existing files and instructions. Use the onboarding answers to complete the brief; ask only unresolved blocking questions and record explicit assumptions for other unknowns.
 
 Discover available custom agents and delegation capabilities. Delegate architecture/contracts to Architect when supported. Use sequential or manual handoffs when necessary and state the actual execution mode.
 

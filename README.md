@@ -237,14 +237,24 @@ Templates are starting points, not approved specifications. Project working reco
 
 Check current official documentation for installation, availability, supported frontmatter, and licensing. Capabilities differ between Copilot clients, versions, and plans. Model selection is left to the user's available models.
 
+### Guided Setup In Chat
+
+For beginners, start with **Chief of Staff** in VS Code chat and run `/factory-bootstrap`, or ask: "Help me set up my project step by step." A repository owner must first add the factory files as described below; a chat prompt cannot load missing profiles automatically. If no folder is open, choose File > Open Folder before starting the project workflow. Do not work from a temporary ZIP preview by mistake.
+
+The [shared onboarding conversation](prompts/BOOTSTRAP.md#guided-onboarding) asks one or two questions at a time: start a new project, improve an existing one, or just explore; describe the outcome and users in everyday language; confirm the folder and preferred client. No completed brief or technical stack choice is required to begin. The coordinator reuses your answers to prepare the brief after you confirm the exact planning write set. CLI remains an advanced alternative with the same approval gates.
+
+Prerequisites are reported as VERIFIED, MISSING, or NOT CHECKED, with the next action when needed. Missing access is not a successful setup. "Just explore" performs no setup writes or specialist dispatch. A completed brief enables a fast path; a returning user can ask "Resume my setup" to reuse working records and answer only missing or changed questions. If no record was saved, supply the prior chat handoff summary. Never send passwords or tokens in chat.
+
+Onboarding ends with EXPLORE ONLY, BLOCKED, or READY FOR PLANNING. Confirmation authorizes only the stated planning records, not tool installation, product implementation, Git publication, resource creation, or deployment. Architecture and implementation still require their own version-specific approval. These are instructions for the selected assistant, not a separate wizard application or a technical enforcement boundary. Structural tests check the protocol; real conversational/client behavior still needs the [onboarding pilot](docs/SDLC_REVIEW.md#onboarding-pilot).
+
 ### Use The Factory In A Repository
 
 1. Merge `.github/agents/`, `.github/prompts/`, and `.github/copilot-instructions.md` into the target repository without overwriting its existing customizations or instructions. Do not blindly copy this kit's active CI workflow into an incomplete product.
 2. Copy `templates/`, `prompts/`, and `docs/` so bundled planning references resolve. Adopt `scripts/` and the product workflow/reusable deployment deliberately through [CI/CD adoption](docs/CICD.md), merging existing pipelines rather than replacing them. The kit's Node package and simulation tests validate this kit; they are not the product's package or test suite.
 3. Review repository instructions and adapt approved runtimes, directory boundaries, commands, and security requirements within organizational constraints.
-4. Complete [templates/PROJECT_BRIEF.md](templates/PROJECT_BRIEF.md) for the project.
+4. Describe your goal during guided onboarding, or complete [templates/PROJECT_BRIEF.md](templates/PROJECT_BRIEF.md) for the fast path. An empty template is not a completed brief.
 5. Open the target folder in VS Code and select **Chief of Staff** in Copilot Chat.
-6. Run `/factory-bootstrap`, use **Chat: Run Prompt...**, or open the [bootstrap prompt](.github/prompts/BOOTSTRAP.prompt.md) and use its Run Prompt action. The prompt requests planning only.
+6. Run `/factory-bootstrap`, use **Chat: Run Prompt...**, or open the [bootstrap prompt](.github/prompts/BOOTSTRAP.prompt.md) and use its Run Prompt action. Confirm the onboarding summary and planning write set before records are prepared. The prompt does not authorize implementation.
 7. Review architecture, contracts, ownership, plan, risks, and acceptance criteria. Approve or revise the exact versions before product scaffolding or implementation.
 8. Resume with the approval reference. Assign bounded tasks, review reports, integrate validated changes, and run required checks.
 9. Use existing pull-request, branch protection, CI/CD, and release processes. Local implementation approval does not authorize release actions.
@@ -276,9 +286,11 @@ Repository instructions and all eleven templates still need to be present in eac
 
 ```text
 Read .github/copilot-instructions.md and templates/PROJECT_BRIEF.md.
-Follow the planning instructions in .github/prompts/BOOTSTRAP.prompt.md.
-Prepare architecture, contracts, ownership, and a plan for explicit approval.
-Do not scaffold or implement the product before approval.
+Follow Guided Onboarding in prompts/BOOTSTRAP.md, one or two questions at a time.
+Reuse my answers and confirm the folder and planning write set before writing.
+After setup confirmation, prepare the plan for separate explicit approval.
+Do not install tools, implement, commit, push, provision, or deploy without
+the applicable action-specific approval.
 ```
 
 Use `/env` and `/agent` to inspect loaded instructions, profiles, and available capabilities. The current CLI documentation gives user-level profiles precedence over project profiles with the same agent ID; a personal installation can therefore shadow project-specific definitions. Review that precedence before rollout, and remove or relocate only the known installed profiles if project definitions should take precedence. Do not disable custom instructions or enable allow-all/autopilot permissions to bypass factory approval gates.
@@ -293,7 +305,7 @@ These checks cover file generation and safety behavior, not authenticated agent 
 
 ### First Run: Plan Before Code
 
-Start with Chief of Staff and ask it to:
+Start with Chief of Staff, complete or resume guided onboarding, and confirm the proposed planning write set. Then ask it to:
 
 1. Inspect the repository and identify the stack and available commands.
 2. Summarize requirements, critical unknowns, assumptions, and risks.
@@ -302,7 +314,7 @@ Start with Chief of Staff and ask it to:
 5. Present named versions for explicit human approval.
 6. Make no product code or scaffolding changes, commits, pushes, deployments, provisioning calls, or destructive operations before the applicable approval.
 
-Planning-document edits are permitted within assigned ownership. This first run checks whether instructions fit the repository before independent implementation.
+Planning-document edits are permitted only after setup confirmation and within assigned ownership. This first run checks whether instructions fit the repository before independent implementation.
 
 Example approval after replacing the placeholders with reviewed versions:
 
