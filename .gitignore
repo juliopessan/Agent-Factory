@@ -1,0 +1,4 @@
+node_modules/
+.factory/evidence/
+artifact/
+*.bak

@@ -1,0 +1,79 @@
+name: Protected product deployment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      commit:
+        type: string
+        required: true
+      manifest_hash:
+        type: string
+        required: true
+      approval_reference:
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-deployment
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    timeout-minutes: 60
+    environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    env:
+      DEPLOY_ENVIRONMENT: ${{ inputs.environment }}
+      RELEASE_COMMIT: ${{ inputs.commit }}
+      RELEASE_MANIFEST_HASH: ${{ inputs.manifest_hash }}
+      APPROVAL_REFERENCE: ${{ inputs.approval_reference }}
+      TARGET_URL: ${{ vars.FACTORY_TARGET_URL }}
+      PREVIOUS_RELEASE: ${{ vars.FACTORY_PREVIOUS_RELEASE }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          ref: ${{ inputs.commit }}
+          persist-credentials: false
+      - name: Verify protected release context and environment policies
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $ErrorActionPreference = 'Stop'
+          if ($env:GITHUB_REF -ne 'refs/heads/main' -or $env:RELEASE_COMMIT -cne $env:GITHUB_SHA) { throw 'Only the selected main commit can be deployed.' }
+          if ($env:DEPLOY_ENVIRONMENT -notin @('DEV', 'UAT', 'PROD')) { throw 'Unknown deployment environment.' }
+          if ([string]::IsNullOrWhiteSpace($env:APPROVAL_REFERENCE)) { throw 'An action-specific approval reference is required.' }
+          $raw = gh api "repos/$env:GITHUB_REPOSITORY/environments/$env:DEPLOY_ENVIRONMENT"
+          if ($LASTEXITCODE -ne 0) { throw 'Cannot verify environment policies; deployment is blocked.' }
+          $policy = $raw | ConvertFrom-Json
+          $reviewers = @($policy.protection_rules | Where-Object type -EQ 'required_reviewers')
+          if ($reviewers.Count -ne 1 -or -not $reviewers[0].prevent_self_review -or @($reviewers[0].reviewers).Count -eq 0) { throw 'Required reviewers with self-review prevention must be configured.' }
+          if (-not $policy.deployment_branch_policy.protected_branches) { throw 'Environment must restrict deployments to protected branches.' }
+          $branchRaw = gh api "repos/$env:GITHUB_REPOSITORY/branches/main"
+          if ($LASTEXITCODE -ne 0 -or -not ($branchRaw | ConvertFrom-Json).protected) { throw 'main must be a protected branch.' }
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093
+        with:
+          name: release-${{ inputs.commit }}
+          path: artifact
+      - name: Deploy, verify, and recover on failure
+        shell: pwsh
+        run: |
+          ./scripts/Invoke-ProductPipeline.ps1 -Stage $env:DEPLOY_ENVIRONMENT -Commit $env:RELEASE_COMMIT -ManifestHash $env:RELEASE_MANIFEST_HASH -TargetUrl $env:TARGET_URL -PreviousRelease $env:PREVIOUS_RELEASE -ApprovalReference $env:APPROVAL_REFERENCE
+      - name: Preserve deployment and recovery evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: deployment-evidence-${{ inputs.environment }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .factory/evidence
+          if-no-files-found: warn
+          retention-days: 30

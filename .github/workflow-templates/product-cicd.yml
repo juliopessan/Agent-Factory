@@ -1,0 +1,114 @@
+name: Product CI and controlled delivery
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      approval_reference:
+        description: Approved release/change record including rollback authority
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: product-release
+  cancel-in-progress: false
+
+jobs:
+  quality:
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Product quality and security gates
+        shell: pwsh
+        env:
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: ./scripts/Invoke-ProductPipeline.ps1 -Stage Quality -Commit $env:RELEASE_COMMIT
+      - name: Preserve quality evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: quality-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .factory/evidence
+          if-no-files-found: warn
+          retention-days: 30
+  build:
+    needs: quality
+    runs-on: windows-latest
+    timeout-minutes: 30
+    outputs:
+      manifest_hash: ${{ steps.release.outputs.manifest_hash }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Build once and seal package
+        id: release
+        shell: pwsh
+        env:
+          RELEASE_COMMIT: ${{ github.sha }}
+        run: |
+          ./scripts/Invoke-ProductPipeline.ps1 -Stage Build -Commit $env:RELEASE_COMMIT
+          "manifest_hash=$((Get-FileHash -LiteralPath artifact/release.json -Algorithm SHA256).Hash)" >> $env:GITHUB_OUTPUT
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: release-${{ github.sha }}
+          path: |
+            artifact/app.zip
+            artifact/sbom.json
+            artifact/release.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Preserve build evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: build-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: .factory/evidence
+          if-no-files-found: warn
+          retention-days: 30
+  dev:
+    if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+    needs: build
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: ./.github/workflows/deploy-product.yml
+    with:
+      environment: DEV
+      commit: ${{ github.sha }}
+      manifest_hash: ${{ needs.build.outputs.manifest_hash }}
+      approval_reference: ${{ inputs.approval_reference }}
+  uat:
+    needs: [build, dev]
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: ./.github/workflows/deploy-product.yml
+    with:
+      environment: UAT
+      commit: ${{ github.sha }}
+      manifest_hash: ${{ needs.build.outputs.manifest_hash }}
+      approval_reference: ${{ inputs.approval_reference }}
+  prod:
+    needs: [build, uat]
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+    uses: ./.github/workflows/deploy-product.yml
+    with:
+      environment: PROD
+      commit: ${{ github.sha }}
+      manifest_hash: ${{ needs.build.outputs.manifest_hash }}
+      approval_reference: ${{ inputs.approval_reference }}

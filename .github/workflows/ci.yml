@@ -1,0 +1,38 @@
+name: Factory CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Validate factory
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Validate structure and workflow contracts
+        run: npm run test:structure
+      - name: Check development dependency advisories
+        run: npm audit --audit-level=high
+      - name: Test installer on PowerShell 7
+        shell: pwsh
+        run: ./tests/setup-local.tests.ps1
+      - name: Test installer on Windows PowerShell 5.1
+        shell: powershell
+        run: ./tests/setup-local.tests.ps1
+      - name: Test pipeline controls with simulated hooks
+        shell: pwsh
+        run: ./tests/product-pipeline.tests.ps1

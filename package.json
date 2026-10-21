@@ -1,0 +1,15 @@
+{
+  "name": "copilot-agent-factory-validation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Structural checks for the factory kit, not a product application.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test:structure": "node tests/validate-project.mjs"
+  },
+  "devDependencies": {
+    "yaml": "2.9.1"
+  }
+}
