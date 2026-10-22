@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "receiptId": "89a90966-7e06-4b37-b82e-ebdc4a6050ff",
+  "status": "current",
+  "command": "deliver",
+  "type": "workflow",
+  "input": "C:\\Users\\julio.cesar.d.pessan\\GitHub Copilot Agent Factory\\docs\\diagrams\\delivery-lifecycle.workflow.json",
+  "output": "C:\\Users\\julio.cesar.d.pessan\\GitHub Copilot Agent Factory\\docs\\diagrams\\delivery-lifecycle.html",
+  "specification": {
+    "sha256": "3e79a8f70e9a678e7ceb52cb05991013aebe562cc6b1fcf98a5551ead36e0faa",
+    "bytes": 4659
+  },
+  "artifact": {
+    "sha256": "e7a726dac0baa9dde5ecd29bc079147f5d12ac781b9eb91e89e2155740c417f2",
+    "bytes": 827846
+  }
+}

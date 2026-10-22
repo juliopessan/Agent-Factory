@@ -4,6 +4,10 @@
 
 > From "AI helps me write code" to "AI agents collaborate within a delivery system we can inspect, govern, and improve."
 
+![Copilot Agent Factory: from individual AI assistance to coordinated delivery through specialist roles, shared contracts, controlled integration and human oversight.](docs/assets/copilot-agent-factory.png)
+
+[Explore the interactive Factory diagram](docs/diagrams/factory-overview.html) | [Diagram sources and validation](docs/diagrams/README.md)
+
 [GitHub Copilot](https://github.com/features/copilot) | [Human oversight and approval gates](#human-oversight-and-approval-gates) | [What this project is and is not](#what-this-project-is-and-is-not)
 
 ---
@@ -75,25 +79,21 @@ Roles can be combined or expanded through an approved adaptation, but every task
 
 ## The Delivery Lifecycle
 
-```mermaid
-flowchart TD
-	A[1. Discover repository and goals] --> B[2. Clarify requirements and constraints]
-	B --> C[3. Define architecture, contracts, and ownership]
-	C --> D{Human approval}
-	D -- Changes requested --> B
-	D -- Approved --> E[4. Establish shared skeleton and baseline checks]
-	E --> F[5. Assign bounded implementation tasks]
-	F --> G[6. Implement within owned files and validate reports]
-	G --> H[7. Integrate validated work centrally]
-	H --> I[8. Run integrated verification and security review]
-	I --> J{Acceptance criteria met?}
-	J -- No --> K[Route defects to accountable owner]
-	K --> G
-	J -- Yes --> L[9. Produce evidence-based delivery report]
-	L --> M{Human release decision}
-	M -- Approved through existing process --> N[Proceed via approved CI/CD workflow]
-	M -- Not approved --> O[Hold, revise, or close]
-```
+![Governed delivery lifecycle with named-baseline approval, owned implementation, central integration, defect correction, evidence review and separately authorized CI/CD.](docs/assets/delivery-lifecycle.png)
+
+[Explore the interactive delivery lifecycle](docs/diagrams/delivery-lifecycle.html). Both diagrams are generated with [Archify](https://github.com/juliopessan/archify), not Mermaid. They describe the operating model, not a record of completed delivery.
+
+| Stage | Deliverable Or Decision | Gate |
+| --- | --- | --- |
+| Discover | Repository context, goals, requirements and constraints | Resolve material unknowns before planning implementation. |
+| Design | Versioned architecture, contracts and exclusive ownership | Human approval required; requested changes return to requirements and design. |
+| Establish | Shared skeleton and baseline checks | Begin only after approval of the named design and plan. |
+| Assign | Bounded implementation tasks with validated dependencies | Only Chief of Staff delegates; independent tasks need disjoint write sets. |
+| Implement | Owned-file changes, executed checks and specialist reports | Validate reports before central integration. |
+| Integrate | Centrally combined and validated work | Chief of Staff owns integration and shared-file changes. |
+| Verify | Integrated checks and security review | If acceptance criteria are unmet, route defects to their accountable owner and repeat implementation, integration and verification. |
+| Report | Evidence-based delivery report | Disclose incomplete work, findings and residual risks. |
+| Release | Human decision through the existing release process | Proceed through approved CI/CD only when authorized; otherwise hold, revise or close. |
 
 ### 1. Discover Before Changing
 
@@ -201,7 +201,7 @@ Standardize the process, but tailor project commands, coding conventions, archit
 `-- README.md
 ```
 
-The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, eleven templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison and remaining adoption gates.
+The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, eleven templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration).
 
 - **Agent profiles** define role, scope, tools, and working expectations.
 - **[Repository instructions](.github/copilot-instructions.md)** provide shared conventions and safety rules.

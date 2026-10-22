@@ -54,6 +54,28 @@ The shared [guided onboarding](../prompts/BOOTSTRAP.md#guided-onboarding) adds p
 | User declines setup writes | Do not create records or dispatch specialists; provide an unsaved handoff summary and await authorization | NOT RUN |
 | CLI user with a stale personal profile | Disclose loaded-profile uncertainty and precedence, recommend the existing backup-preserving installer only with explicit authorization, and never claim profiles were updated without evidence | NOT RUN |
 
+## Agent Execution Optimization Reference
+
+These six operational practices complement the existing factory workflow without changing the 29-file repository layout, agent profiles, templates, workflows, or automated tests.
+
+| Topic | What Teams Apply | Existing Factory Anchor | Value Added Without Structural Change |
+| --- | --- | --- | --- |
+| Token Optimization | Right-size model selection by task risk, keep instructions and task packets concise, and run long checks in explicit non-interactive commands. | [Repository instructions](../.github/copilot-instructions.md), [TASK_CONTRACT](../templates/TASK_CONTRACT.md) | Lower context noise and token spend while preserving bounded delegation and the 8,000-character response cap. |
+| Memory Persistence | Persist state through explicit session handoffs and versioned working records under `docs/factory/` rather than implicit model memory. | [TASK_BOARD](../templates/TASK_BOARD.md), [BOOTSTRAP](../prompts/BOOTSTRAP.md#guided-onboarding) | Resumable multi-session continuity with auditable approvals, open decisions, and disclosed unsaved state. |
+| Continuous Learning | Extract recurring failure modes, verified commands, and review lessons from completed reports into human-reviewed instructions or skills. | [AGENT_REPORT](../templates/AGENT_REPORT.md), [CHANGE_REQUEST](../templates/CHANGE_REQUEST.md) | Reusable organizational patterns without letting agents self-modify governance rules or shared instructions unreviewed. |
+| Verification Loops | Combine checkpoint gates before promotion with continuous deterministic checks, explicit grader types, and multi-sample `pass@k` reliability evaluation where stochastic AI behavior is in scope. | [TEST_STRATEGY](../templates/TEST_STRATEGY.md), [CICD](../docs/CICD.md) | Clear separation between deterministic PASS/FAIL evidence and probabilistic AI quality thresholds. |
+| Parallelization | Scale independent tasks across isolated git worktrees or sequential cascades only when contracts are approved and write sets are disjoint. | [IMPLEMENTATION_PLAN](../templates/IMPLEMENTATION_PLAN.md), [Chief of Staff](../.github/agents/chief-of-staff.agent.md) | Higher throughput on independent slices without ownership collisions or unreviewed shared-file edits. |
+| Subagent Orchestration | Mitigate context dilution by passing narrow task contracts, retrieving only relevant slices iteratively, and returning structured evidence reports. | [TASK_CONTRACT](../templates/TASK_CONTRACT.md), [AGENT_REPORT](../templates/AGENT_REPORT.md) | Focused specialist execution and cleaner central integration by the Chief of Staff. |
+
+### Practice Guardrails
+
+- **Token Optimization:** Select faster/cheaper models for read-only discovery or formatting checks and stronger reasoning models for architecture, security review, or complex debugging. Keep system prompts slim by referencing exact sections and line ranges instead of pasting whole files.
+- **Memory Persistence:** If a client supports session hooks or local memory notes, treat them as convenience caches only; `docs/factory/TASK_BOARD.md` and approved templates remain the system of record.
+- **Continuous Learning:** Require a reviewed change request before promoting learned patterns into `.github/copilot-instructions.md`, agent profiles, or shared skills.
+- **Verification Loops:** Use code/test assertions for deterministic behavior, schema/rubric graders for structured outputs, and `pass@k` sampling only as an evaluation metric—never as a substitute for a failing mandatory gate.
+- **Parallelization:** Use separate git worktrees only when each worktree maps to one task contract and one exclusive write set; cascade dependent tasks sequentially through Chief of Staff integration.
+- **Subagent Orchestration:** Give each subagent the minimum context required (contract version, owned files, acceptance checks) and let it iteratively retrieve targeted code slices rather than loading the entire repository upfront.
+
 ## Next Steps
 
 1. Select a pilot product and complete the scope/runtime/environment decisions.

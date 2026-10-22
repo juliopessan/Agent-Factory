@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "ok": true,
+  "command": "finalize",
+  "status": "pass",
+  "type": "workflow",
+  "quality": "showcase",
+  "specification": {
+    "path": "C:\\Users\\julio.cesar.d.pessan\\GitHub Copilot Agent Factory\\docs\\diagrams\\factory-overview.workflow.json",
+    "sha256": "6c6041b2fbb1d21297cf173f73941ca959387030a5d02b7b108ea09a881a85c5",
+    "bytes": 4162
+  },
+  "artifact": {
+    "path": "C:\\Users\\julio.cesar.d.pessan\\GitHub Copilot Agent Factory\\docs\\diagrams\\factory-overview.html",
+    "sha256": "a2ac1dc9f4802a957003dca484df93aa9349ac13723be51241cf4915225572fa",
+    "bytes": 823723
+  },
+  "gates": {
+    "validate": "pass",
+    "deliver": "pass",
+    "check": "pass",
+    "browser-check": "pass"
+  },
+  "diagnostics": [],
+  "diagnosticSummary": {
+    "total": 0,
+    "shown": 0,
+    "truncated": false
+  },
+  "evidence": {
+    "receipt": "C:\\Users\\julio.cesar.d.pessan\\AppData\\Local\\Temp\\factory-archify-bfb8b9788eae4f048e1465cd15286b32\\overview-review-2\\factory-overview.finalize.json",
+    "summaryReceipt": "C:\\Users\\julio.cesar.d.pessan\\AppData\\Local\\Temp\\factory-archify-bfb8b9788eae4f048e1465cd15286b32\\overview-review-2\\factory-overview.finalize-summary.json",
+    "browserCheckReceipt": "C:\\Users\\julio.cesar.d.pessan\\AppData\\Local\\Temp\\factory-archify-bfb8b9788eae4f048e1465cd15286b32\\overview-review-2\\factory-overview.browser-check.json"
+  },
+  "update": {
+    "status": "update_available",
+    "installedVersion": "3.1.0",
+    "availableVersion": "3.2.0",
+    "releaseNotes": "https://github.com/tt-a1i/archify/releases/tag/v3.2.0",
+    "severity": "normal",
+    "checkedAt": "2026-10-22T12:52:37.060Z",
+    "source": "cache",
+    "noticeRequired": true,
+    "noticeText": "Archify update: 3.1.0 → 3.2.0. A previous check at 2026-10-22T12:52:37.060Z found a newer release. Release notes: https://github.com/tt-a1i/archify/releases/tag/v3.2.0. The installed Skill has not changed; ask to snooze or ignore this reminder.",
+    "eventKey": "archify@sha256:70e210265c59f24dcbdf2a502ff671104b5454e7ee7d3554aecd86bad32384f5"
+  },
+  "visualReview": "not-requested",
+  "durationMs": 12167
+}

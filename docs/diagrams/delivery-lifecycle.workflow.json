@@ -1,0 +1,54 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Governed Delivery Lifecycle",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/delivery-lifecycle.html",
+    "repository": {
+      "url": "https://github.com/juliopessan/Copilot-Agent-Factory.git",
+      "revision": "409597a71ce7605b3a392500af5125363aa01f90"
+    }
+  },
+  "lanes": [
+    { "id": "planning", "label": "Discovery and human decisions" },
+    { "id": "delivery", "label": "Implementation and integration" },
+    { "id": "verification", "label": "Verification and correction" },
+    { "id": "promotion", "label": "Separately authorized promotion" }
+  ],
+  "mainPath": ["discover", "design", "approval", "baseline", "implement", "integrate", "verify", "report", "release", "cicd"],
+  "nodes": [
+    { "id": "discover", "lane": "planning", "col": 0, "type": "backend", "label": "Discover", "sublabel": "Goals and constraints", "sources": [{ "path": "README.md" }] },
+    { "id": "design", "lane": "planning", "col": 1, "type": "backend", "label": "Define baseline", "sublabel": "Design, plan, ownership", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "approval", "lane": "planning", "col": 2, "type": "security", "label": "Human approval", "sublabel": "Named versions", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "baseline", "lane": "delivery", "col": 2, "type": "backend", "label": "Establish skeleton", "sublabel": "Run baseline checks", "sources": [{ "path": "README.md" }] },
+    { "id": "implement", "lane": "delivery", "col": 3, "type": "backend", "label": "Assign and build", "sublabel": "Bounded, owned files", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "integrate", "lane": "delivery", "col": 4, "type": "backend", "label": "Integrate centrally", "sublabel": "Chief of Staff", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "verify", "lane": "verification", "col": 4, "type": "security", "label": "Verify acceptance", "sublabel": "Checks and security", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "defects", "lane": "verification", "col": 3, "type": "backend", "label": "Route defects", "sublabel": "Accountable owner", "sources": [{ "path": "README.md" }] },
+    { "id": "report", "lane": "verification", "col": 5, "type": "backend", "label": "Delivery report", "sublabel": "Evidence and limits", "sources": [{ "path": "README.md" }] },
+    { "id": "release", "lane": "planning", "col": 5, "type": "security", "label": "Release decision", "sublabel": "Human authorization", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "hold", "lane": "planning", "col": 4, "type": "external", "icon": "stop", "label": "Hold or close", "sublabel": "No release approval", "sources": [{ "path": "README.md" }] },
+    { "id": "cicd", "lane": "promotion", "col": 5, "type": "messagebus", "label": "Approved CI/CD", "sublabel": "Authorized workflow", "sources": [{ "path": ".github/copilot-instructions.md" }] }
+  ],
+  "edges": [
+    { "from": "discover", "to": "design" },
+    { "from": "design", "to": "approval" },
+    { "from": "approval", "to": "design", "label": "Revise", "role": "return", "route": "up-channel", "fromSide": "top", "toSide": "top" },
+    { "from": "approval", "to": "baseline", "label": "Approved", "variant": "security" },
+    { "from": "baseline", "to": "implement" },
+    { "from": "implement", "to": "integrate" },
+    { "from": "integrate", "to": "verify" },
+    { "from": "verify", "to": "defects", "label": "Fail", "role": "error", "variant": "security" },
+    { "from": "defects", "to": "implement", "label": "Rework", "role": "return" },
+    { "from": "verify", "to": "report", "label": "Pass" },
+    { "from": "report", "to": "release", "label": "For review" },
+    { "from": "release", "to": "hold", "label": "Not approved", "variant": "security" },
+    { "from": "release", "to": "cicd", "label": "Approved", "variant": "security", "route": "outside-right", "fromSide": "right", "toSide": "right", "labelSegment": 1 }
+  ],
+  "cards": [
+    { "dot": "emerald", "title": "Release boundary", "items": ["A separate human release approval permits the approved CI/CD workflow", "Local fixtures and source review are not hosted or production evidence"] },
+    { "dot": "amber", "title": "Current extension acceptance", "items": ["Real VS Code and CLI recovery pilots: NOT RUN", "Runtime-state exception: human disposition remains OPEN", "Phase 2 learning has not been authorized"] }
+  ]
+}

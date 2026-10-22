@@ -1,0 +1,50 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Copilot Agent Factory",
+    "locale": "en",
+    "quality_profile": "showcase",
+    "output": "docs/diagrams/factory-overview.html",
+    "repository": {
+      "url": "https://github.com/juliopessan/Copilot-Agent-Factory.git",
+      "revision": "409597a71ce7605b3a392500af5125363aa01f90"
+    }
+  },
+  "lanes": [
+    { "id": "human", "label": "Human oversight" },
+    { "id": "coordination", "label": "Planning and coordination" },
+    { "id": "implementation", "label": "Owned implementation" },
+    { "id": "evidence", "label": "Verification and evidence" }
+  ],
+  "mainPath": ["sponsor", "chief", "architect", "approval", "dispatch", "specialists", "integration", "qa", "security", "documentation", "release"],
+  "nodes": [
+    { "id": "sponsor", "lane": "human", "col": 0, "type": "external", "icon": "person", "label": "Human sponsor", "sublabel": "Goals and constraints", "sources": [{ "path": "README.md" }] },
+    { "id": "chief", "lane": "coordination", "col": 0, "type": "backend", "label": "Chief of Staff", "sublabel": "Sole coordinator", "sources": [{ "path": ".github/agents/chief-of-staff.agent.md" }] },
+    { "id": "architect", "lane": "coordination", "col": 1, "type": "backend", "label": "Architect", "sublabel": "Versioned contracts", "sources": [{ "path": ".github/agents/architect.agent.md" }] },
+    { "id": "approval", "lane": "human", "col": 1, "type": "security", "label": "Human approval", "sublabel": "Named baselines", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "dispatch", "lane": "coordination", "col": 2, "type": "messagebus", "label": "Bounded dispatch", "sublabel": "Chief of Staff only", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "specialists", "lane": "implementation", "col": 2, "type": "backend", "label": "Implementation", "sublabel": "UI, APIs and adapters", "tag": "exclusive owners", "sources": [{ "path": "README.md" }, { "path": ".github/copilot-instructions.md" }] },
+    { "id": "integration", "lane": "coordination", "col": 3, "type": "backend", "label": "Central integration", "sublabel": "Chief of Staff", "sources": [{ "path": ".github/copilot-instructions.md" }] },
+    { "id": "qa", "lane": "evidence", "col": 3, "type": "backend", "label": "QA Engineer", "sublabel": "Executed checks", "sources": [{ "path": ".github/agents/qa.agent.md" }] },
+    { "id": "security", "lane": "evidence", "col": 4, "type": "security", "label": "Security Reviewer", "sublabel": "Read-only findings", "sources": [{ "path": ".github/agents/security.agent.md" }] },
+    { "id": "documentation", "lane": "coordination", "col": 4, "type": "backend", "label": "Documentation", "sublabel": "Verified handoff", "sources": [{ "path": ".github/agents/docs.agent.md" }] },
+    { "id": "release", "lane": "human", "col": 5, "type": "security", "label": "Release decision", "sublabel": "Separate authorization", "sources": [{ "path": ".github/copilot-instructions.md" }] }
+  ],
+  "edges": [
+    { "from": "sponsor", "to": "chief" },
+    { "from": "chief", "to": "architect" },
+    { "from": "architect", "to": "approval" },
+    { "from": "approval", "to": "dispatch", "label": "Approved", "variant": "security" },
+    { "from": "dispatch", "to": "specialists" },
+    { "from": "specialists", "to": "integration", "label": "Reports" },
+    { "from": "integration", "to": "qa" },
+    { "from": "qa", "to": "security" },
+    { "from": "security", "to": "documentation", "label": "Findings" },
+    { "from": "documentation", "to": "release", "label": "Evidence" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Shared context", "items": ["Versioned contracts, central task board and explicit file ownership", "Only Chief of Staff delegates and integrates shared changes"] },
+    { "dot": "amber", "title": "Scope of this map", "items": ["Documented operating model, not a trace of completed work", "Parallel work requires disjoint ownership and actual client capability", "Checkpoint handoffs are opt-in; real-client acceptance remains pending"] }
+  ]
+}
