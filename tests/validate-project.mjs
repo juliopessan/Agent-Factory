@@ -91,4 +91,22 @@ for (const entry of ['.github/agents/chief-of-staff.agent.md', '.github/prompts/
   assert(content.includes('one or two questions per turn'), `${entry}: missing progressive conversation`);
 }
 assert(bootstrap.includes('For EXPLORE ONLY or BLOCKED, do not execute the steps below.'), 'Planning must remain gated');
-console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding contracts, Markdown tables/fences, and ${localLinks} local links. Conversational behavior was not evaluated.`);
+const reviewPolicy = readFileSync(join(root, 'REVIEW.md'), 'utf8');
+const claudeEntry = readFileSync(join(root, 'CLAUDE.md'), 'utf8');
+const factoryInstructions = readFileSync(join(root, '.github/copilot-instructions.md'), 'utf8');
+assert(claudeEntry.includes('(.github/copilot-instructions.md)') && claudeEntry.includes('(REVIEW.md)'), 'Claude entry must reuse Factory rules and review policy');
+assert(factoryInstructions.includes('[REVIEW.md](../REVIEW.md)'), 'Copilot instructions must explicitly route reviews to the shared policy');
+for (const requirement of [
+  'REV-1', '## Risk And Depth', '## Findings Contract', '## Review And Convergence',
+  'INTRODUCED', 'PRE_EXISTING', 'UNKNOWN', 'REJECTED_WITH_EVIDENCE', 'RISK_ACCEPTED_BY_HUMAN',
+  'After three review rounds', 'stop automatic fix/review iteration', 'New changes invalidate affected review evidence',
+  'Model agreement alone is not evidence', 'NOT OBSERVED', 'does not configure branch protections',
+]) assert(reviewPolicy.includes(requirement), `Missing review policy contract: ${requirement}`);
+const reviewReport = readFileSync(join(root, 'templates/AGENT_REPORT.md'), 'utf8');
+const commander = readFileSync(join(root, '.github/agents/chief-of-staff.agent.md'), 'utf8');
+assert(reviewReport.includes('[REVIEW.md](../REVIEW.md)') && reviewReport.includes('## Review Evidence'), 'Agent reports must retain shared review evidence');
+assert(commander.includes('[REVIEW.md](../../REVIEW.md)') && commander.includes('separate-context review'), 'Commander must coordinate shared review without a new role');
+for (const requirement of ['Risk tier and rationale', 'Reviewer and independence', 'Round and prior review reference', 'NOT OBSERVED', 'human reference for risk acceptance']) {
+  assert(reviewReport.includes(requirement), `Missing review report field: ${requirement}`);
+}
+console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding and review policy contracts, Markdown tables/fences, and ${localLinks} local links. Conversational behavior and live review enforcement were not evaluated.`);

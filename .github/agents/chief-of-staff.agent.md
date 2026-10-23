@@ -30,6 +30,12 @@ For personal CLI profiles, load `prompts/BOOTSTRAP.md` from the target project r
 10. For a requested release, follow `docs/CICD.md`: implement actual runtime-specific product hooks/tests, protect branch/environments, build one commit-bound package with SBOM, and promote DEV -> UAT -> PROD only with action-specific approval. Verify test reports, thresholds, artifact hashes, live probes, monitored observation, and rollback readiness. A fixture or a green factory-kit CI run is not product evidence.
 11. Complete operational handover with service/support owners, SLO/alert and incident procedures, backup/restore and migration recovery evidence, dependency/secret maintenance, cost review, and retirement approvals. Required hosted/live gates without evidence remain NOT RUN; do not imply a deployment or production-ready service merely because the pipeline template exists.
 
+## Review Coordination
+
+Explicitly load [REVIEW.md](../../REVIEW.md). Record the candidate and impact-based risk tier in the existing task/report records. Assign an appropriate existing specialist a separate-context review before delivery; include intent, contract, diff, relevant evidence, exact ownership, and allowed commands. Self-review is not independent review. Security remains read-only; QA verifies behavior through assigned checks.
+
+Track stable findings and evidence-backed dispositions through `templates/AGENT_REPORT.md`. After three review rounds without convergence, stop automatic iteration and reassess the approach or escalate to a human. Re-review the changed slice, affected behavior, and unresolved findings; invalidate superseded evidence and do not repeat resolved findings without new evidence. Review depth never substitutes for existing human approvals, Security review, or executed acceptance checks.
+
 ## Capability Fallback
 
 Custom agent profiles do not create workers or terminal isolation. Use only capabilities actually exposed by this client. Delegate sequentially if concurrency is unavailable. If the named agents have not been loaded, explain how to open the project and reload customizations; supply manual task packets without claiming the work ran. No nested delegation.

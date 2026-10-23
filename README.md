@@ -147,6 +147,24 @@ People approve architecture baselines, material scope changes, sensitive operati
 
 Standardize the process, but tailor project commands, coding conventions, architecture patterns, compliance obligations, and quality gates within approved platform constraints.
 
+## Shared Review Policy
+
+[REVIEW.md](REVIEW.md) defines one review policy for the existing agents: impact-based depth, evidence-backed findings, stable finding IDs and dispositions, separate-context review, and escalation after three rounds without convergence. Findings and observed metrics stay in the existing [agent report](templates/AGENT_REPORT.md) and task board; no new agent role, service, checkpoint schema, or directory is introduced.
+
+[CLAUDE.md](CLAUDE.md) is a short compatibility entry point for clients that load that filename. It points to the existing [Factory instructions](.github/copilot-instructions.md) rather than duplicating governance or approving another provider. Copilot reviews reach the same policy through the repository instructions. REVIEW.md must be read explicitly; its filename alone does not enable a reviewer.
+
+These files guide behavior, not technical merge enforcement. Automated PR review, branch rules, paid evaluations, and production approval remain separately configured and authorized. The structural tests check policy wiring and required clauses, not actual reviewer adherence or review quality. This revision does not claim a live client pilot.
+
+The personal-profile installer remains profile-only. When adopting this revision in another repository, explicitly merge the policy entry points, report additions, and applicable instructions through the existing onboarding/change process; do not overwrite the target's CLAUDE.md or REVIEW.md. Installing personal profiles does not install project policies.
+
+### Run A Review
+
+1. Give Chief of Staff the change intent, approved task/contract, actual candidate or worktree snapshot, diff, and available test evidence.
+2. Have the coordinator load the shared policy, record Quick/Standard/Deep depth based on impact, and assign an existing specialist a separate-context review within explicit ownership.
+3. Retain stable finding IDs, evidence, dispositions, and observed round counts in the existing report. Route fixes to their owners and recheck the affected behavior; after three rounds without convergence, stop automatic iteration and escalate.
+
+Run `npm run test:structure` from the kit root to validate policy links and required clauses. This does not execute a reviewer, prove independent review, or replace the product's acceptance checks.
+
 ## Repository Contents
 
 ```text
@@ -195,6 +213,8 @@ Standardize the process, but tailor project commands, coding conventions, archit
 |   |-- product-pipeline.tests.ps1
 |   `-- validate-project.mjs
 |-- .gitignore
+|-- CLAUDE.md
+|-- REVIEW.md
 |-- package.json
 |-- package-lock.json
 |-- setup-local.ps1
