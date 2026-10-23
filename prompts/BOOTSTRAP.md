@@ -25,7 +25,7 @@ Enter only after READY FOR PLANNING. Completing onboarding is not implementation
 
 1. Inspect the relevant code, conventions, toolchain, test commands, and current delivery process. Identify users, Must Haves, non-goals, risks, and material questions.
 2. Prepare versioned architecture, contracts, ownership, and the implementation plan. Use the task board for approvals and state. Assign planning records to exactly one writer.
-3. Prepare `templates/TEST_STRATEGY.md`, `templates/RELEASE_PLAN.md`, and `templates/OPERATIONS_RUNBOOK.md` working copies under `docs/factory/`. Map tests to requirements, environments, product hooks, evidence, recovery, and operational owners.
+3. Prepare `templates/TEST_STRATEGY.md`, `templates/RELEASE_PLAN.md`, and `templates/OPERATIONS_RUNBOOK.md` working copies, plus a `templates/REVIEW.md` project review guide, under `docs/factory/`. Map tests to requirements, environments, product hooks, evidence, recovery, and operational owners.
 4. Present those versions for explicit human approval. Stop before product scaffolding or implementation. Silence, a READY report, and successful kit tests are not approval or product evidence.
 5. After approval, establish the minimal skeleton and contracts. Dispatch only bounded tasks with disjoint write sets and validated dependencies. Chief of Staff owns shared files, pipeline integration, and redispatch.
 6. Run actual product checks, inspect specialist evidence, and validate a real integrated local flow. Follow `docs/CICD.md` for the opt-in product pipeline; do not copy the simulation fixture into product hooks.
