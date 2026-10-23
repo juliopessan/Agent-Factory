@@ -38,6 +38,7 @@ These are behavioral instructions, not a security sandbox. Tool permissions, edi
 - Run the cheapest relevant check after a substantive edit. A check not executed is NOT RUN, not PASS. Distinguish test doubles from live integrations.
 - Chief of Staff reviews ownership compliance and reports before integration, then performs integration, build, tests, and a real local execution/smoke check. QA validates acceptance criteria; Security reviews the integrated result; Docs records reproducible setup and operational limits.
 - Acceptance requires evidence for every Must Have, no unresolved blocking defects or security findings, and an explicit record of any human-accepted residual risks. Mark unverified work BLOCKED or INCOMPLETE.
+- Review per `templates/REVIEW.md`: clean-context reviewers, `path:line` evidence with a failure scenario, severity labels with a nit cap, a three-round cap, and a risk tier set by the change rather than the author. Turn findings repeated across tasks into a reviewed rule (lint, test, instructions, or the review guide) through a change request. An agent review or approval never counts as human review, merge approval, or release approval.
 - Preserve a resumable task board. Never claim production readiness, successful deployment, simultaneous execution, or independent review without evidence.
 
 ## Full Lifecycle And CI/CD

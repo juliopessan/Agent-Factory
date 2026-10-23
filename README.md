@@ -185,6 +185,7 @@ Standardize the process, but tailor project commands, coding conventions, archit
 |   |-- AGENT_REPORT.md
 |   |-- TASK_CONTRACT.md
 |   |-- CHANGE_REQUEST.md
+|   |-- REVIEW.md
 |   |-- TEST_STRATEGY.md
 |   |-- RELEASE_PLAN.md
 |   `-- OPERATIONS_RUNBOOK.md
@@ -201,7 +202,7 @@ Standardize the process, but tailor project commands, coding conventions, archit
 `-- README.md
 ```
 
-The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, eleven templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration).
+The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, twelve templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration), plus the [agent code review reference](docs/SDLC_REVIEW.md#agent-code-review-reference).
 
 - **Agent profiles** define role, scope, tools, and working expectations.
 - **[Repository instructions](.github/copilot-instructions.md)** provide shared conventions and safety rules.
@@ -220,6 +221,7 @@ The kit contains eight agents, shared instructions, VS Code and plain cross-clie
 | [AGENT_REPORT](templates/AGENT_REPORT.md) | Specialist returns, limitations, findings, and final delivery addendum |
 | [TASK_CONTRACT](templates/TASK_CONTRACT.md) | One accountable owner, exact write set, approved versions, dependencies, allowed commands, and acceptance evidence |
 | [CHANGE_REQUEST](templates/CHANGE_REQUEST.md) | Shared-change impact, affected tasks, approval decisions, verification, and resumption |
+| [REVIEW](templates/REVIEW.md) | Clean-context review protocol, change-decided risk tiers, failure smells, accepted false positives, repeated-finding rules, and reviewer regression cases |
 | [TEST_STRATEGY](templates/TEST_STRATEGY.md) | Automated requirement-to-gate matrix, coverage, security/SLO thresholds, evidence, and human acceptance |
 | [RELEASE_PLAN](templates/RELEASE_PLAN.md) | Immutable candidate, protected DEV/UAT/PROD promotion, approvals, migration and recovery |
 | [OPERATIONS_RUNBOOK](templates/OPERATIONS_RUNBOOK.md) | Service/support ownership, monitoring, incidents, continuity, maintenance, cost, and retirement |
@@ -282,7 +284,7 @@ The installer previews safely with `-WhatIf`, skips identical profiles, and prom
 
 CLI copies use CLI tool names, omit VS Code-only delegation/picker metadata, set `infer: false` for Chief of Staff, and opt into repository custom instructions with `include-custom-instructions: true`. The VS Code `todo` alias has no mapped CLI tool and is omitted; use the task board instead. The named delegate allowlist remains a behavioral requirement in CLI, not an enforced VS Code `agents` field. Verify actual tool availability in the installed CLI version before use.
 
-Repository instructions and all eleven templates still need to be present in each target project. User profiles do not install those records or convert the VS Code bootstrap into a CLI slash command. Start `copilot` from the prepared project, use `/agent` to select **Chief of Staff**, and use the [plain cross-client bootstrap](prompts/BOOTSTRAP.md), or send:
+Repository instructions and all twelve templates still need to be present in each target project. User profiles do not install those records or convert the VS Code bootstrap into a CLI slash command. Start `copilot` from the prepared project, use `/agent` to select **Chief of Staff**, and use the [plain cross-client bootstrap](prompts/BOOTSTRAP.md), or send:
 
 ```text
 Read .github/copilot-instructions.md and templates/PROJECT_BRIEF.md.

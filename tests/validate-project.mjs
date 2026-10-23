@@ -91,4 +91,12 @@ for (const entry of ['.github/agents/chief-of-staff.agent.md', '.github/prompts/
   assert(content.includes('one or two questions per turn'), `${entry}: missing progressive conversation`);
 }
 assert(bootstrap.includes('For EXPLORE ONLY or BLOCKED, do not execute the steps below.'), 'Planning must remain gated');
-console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding contracts, Markdown tables/fences, and ${localLinks} local links. Conversational behavior was not evaluated.`);
+const review = readFileSync(join(root, 'templates/REVIEW.md'), 'utf8');
+for (const requirement of [
+  'Clean context', 'path:line', 'Nit cap', 'Round cap', 'The change decides the tier, not the author',
+  'An agent review is evidence, never approval', 'Do Not Flag', 'Repeated Findings Become Rules', 'Reviewer Regression Cases',
+]) assert(review.includes(requirement), `Missing review contract: ${requirement}`);
+for (const entry of ['.github/copilot-instructions.md', '.github/agents/chief-of-staff.agent.md']) {
+  assert(readFileSync(join(root, entry), 'utf8').includes('templates/REVIEW.md'), `${entry}: missing review guide`);
+}
+console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding contracts, review guide contracts, Markdown tables/fences, and ${localLinks} local links. Conversational behavior was not evaluated.`);

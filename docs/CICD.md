@@ -15,7 +15,7 @@ This guide separates executable factory-kit CI from product-specific controlled 
 
 ## Activate In A Product
 
-1. Merge repository instructions; include the eleven templates, desired agents/bootstrap, the runner, and the reusable deployment workflow. Keep source control and owner reviews for shared files. Never copy test fixtures as implementation hooks.
+1. Merge repository instructions; include the twelve templates, desired agents/bootstrap, the runner, and the reusable deployment workflow. Keep source control and owner reviews for shared files. Never copy test fixtures as implementation hooks.
 2. Implement every `.factory/hooks/<hook>.ps1` listed below with actual product commands and assertion-bearing tests. Install/pin the selected product SDKs, browsers, scanners, and dependencies through the `restore` hook and approved setup steps. Build runs on a fresh runner, so restore also runs there. Use lockfiles and validate native exit codes.
 3. Approve the test strategy, thresholds, scope extensions, release plan, action-specific deployment/recovery authority, and operational runbook. The baseline gates are mandatory, not optional success stubs.
 4. Configure GitHub branch rules, required checks, and the `DEV`, `UAT`, and `PROD` environments. Each needs required reviewers, prevention of self-review, and a policy permitting only protected branches. The reusable workflow checks these settings via the GitHub API and fails closed if it cannot verify them. Confirm reviewers cannot bypass policy administratively according to organizational rules.

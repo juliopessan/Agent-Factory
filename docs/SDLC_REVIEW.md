@@ -76,6 +76,28 @@ These six operational practices complement the existing factory workflow without
 - **Parallelization:** Use separate git worktrees only when each worktree maps to one task contract and one exclusive write set; cascade dependent tasks sequentially through Chief of Staff integration.
 - **Subagent Orchestration:** Give each subagent the minimum context required (contract version, owned files, acceptance checks) and let it iteratively retrieve targeted code slices rather than loading the entire repository upfront.
 
+## Agent Code Review Reference
+
+These practices adapt publicly described agent code review patterns (layered "Swiss cheese" checks used by the Claude Code team at Anthropic) to the factory. They add one template, [REVIEW](../templates/REVIEW.md), and short rules in existing anchors; folders, agents, workflows, and gates are unchanged.
+
+| Review Layer | What Teams Apply | Existing Factory Anchor | Adoption In This Kit |
+| --- | --- | --- | --- |
+| Pre-review self checks | Author runs build, lint, and tests, then a clean-context reviewer reads only the diff | [Chief of Staff](../.github/agents/chief-of-staff.agent.md) step 7, [TASK_CONTRACT](../templates/TASK_CONTRACT.md) | Adopted: clean-context review rule |
+| Deterministic CI | Lint, type, test, and build failures block merge | [CICD](CICD.md), [Factory CI](../.github/workflows/ci.yml) | Already present |
+| Intent-aware agent review | Diff read against the repository and stated objective; findings cite `path:line`, carry severity, and cap nits | [REVIEW](../templates/REVIEW.md) protocol | Adopted as guidance; multi-agent consensus filtering is optional and costly |
+| Security review | Dedicated security pass on the integrated candidate | [Security Reviewer](../.github/agents/security.agent.md) | Already present; now reads the review guide |
+| Risk-tiered human review | The change, not the author, sets LOW/MEDIUM/HIGH and the number of human reviewers | [REVIEW](../templates/REVIEW.md) risk tier, [TASK_BOARD](../templates/TASK_BOARD.md) | Adopted; agent approval never counts as human approval |
+| Merge queue re-check | Checks re-run with the change applied on the latest base | Branch protection in [CICD](CICD.md) | Platform setting, not kit content |
+| Post-merge safety | Feature flags, gradual rollout, and fast rollback | [RELEASE_PLAN](../templates/RELEASE_PLAN.md), [OPERATIONS_RUNBOOK](../templates/OPERATIONS_RUNBOOK.md) | Already present as DEV/UAT/PROD promotion and rollback |
+
+### Review Guardrails
+
+- **Low cost, high value:** clean-context review, a code-owner review guide, repeated findings promoted to rules, a three-round cap, and agent approval never counting as human approval need no extra tooling.
+- **Feedback loop:** a real finding seen in two or more tasks becomes a lint/test rule, an instruction line, or a guide entry through a reviewed change request; a false positive becomes a Do Not Flag entry.
+- **Reviewer regression:** confirmed escaped defects become reviewer regression cases, re-run whenever reviewer prompts, profiles, models, or tools change.
+- **Noise budget:** an agent author fixes every nit, and each fix triggers another round, so cap nits per round and review only what changed after the first round.
+- **Limits:** published results come from a codebase models know well; expect lower bug-detection rates on private code, and do not reduce human review for HIGH-tier changes on the strength of agent review alone. Consensus filtering across parallel reviewers and continuous evaluation suites carry real token cost; adopt them only after measuring signal quality.
+
 ## Next Steps
 
 1. Select a pilot product and complete the scope/runtime/environment decisions.
