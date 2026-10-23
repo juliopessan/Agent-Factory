@@ -115,7 +115,7 @@ The coordinator reviews reports and actual changed files, checks ownership compl
 
 ### 5. Verify The Actual Result
 
-Run the repository's relevant checks, not just checks suggested by an agent. Depending on the project, these include formatting, linting, type checking, unit/integration/end-to-end tests, dependency and secret scanning, accessibility checks, build validation, and manual review. Require real local execution and an observable smoke flow for the agreed delivery gate. Distinguish test doubles, emulators, and authorized live integrations.
+Run the repository's relevant checks, not just checks suggested by an agent. Depending on the project, these include formatting, linting, type checking, unit/integration/end-to-end tests, dependency and secret scanning, accessibility checks, build validation, and manual review. Require real local execution and an observable smoke flow for the agreed delivery gate. Distinguish test doubles, emulators, and authorized live integrations. Review diffs in a clean context per the [review guide](templates/REVIEW.md): the reviewer sees only the diff, task contract, and guide; findings cite `path:line` with a failure scenario; and review stops after three rounds for a human decision instead of looping on nits.
 
 ### 6. Leave Evidence For The Next Person
 
@@ -340,6 +340,7 @@ Adopt the factory through existing engineering governance, not around it.
 | Task assignment | Bounded scope, one writer, acceptance criteria, permitted files, validated dependencies | Coordinator and task owner |
 | Security review | Threat-sensitive changes routed through security processes | Engineering and security owners |
 | Verification | Required checks executed with retained results | Implementer, reviewer, and CI owners |
+| Agent code review | Clean-context review, risk tier set by the change, nit and round caps, repeated findings promoted to rules | Code owners maintain the review guide; Chief of Staff applies it |
 | Merge and release | Pull-request, branch protection, approval, and deployment controls | Authorized approvers and release process |
 | Operational feedback | Defects, rework, blockers, and review feedback improve templates | Team lead / engineering enablement |
 
@@ -356,7 +357,7 @@ Confirm that the selected Copilot product, settings, access, and data-handling c
 
 ### Human Oversight And Approval Gates
 
-Discovery and planning come first; product implementation begins only after named architecture, contracts, plan, and ownership versions are accepted. Release follows existing controls. Silence is not approval. Material changes to scope, contracts, architecture, ownership, platform selection, or accepted risk reopen the affected gate.
+Discovery and planning come first; product implementation begins only after named architecture, contracts, plan, and ownership versions are accepted. Release follows existing controls. Silence is not approval. An agent review or approval is evidence, never a human review, merge approval, or release decision; the change's risk tier sets the minimum number of human reviewers. Material changes to scope, contracts, architecture, ownership, platform selection, or accepted risk reopen the affected gate.
 
 An agent instruction cannot enforce policy against a user or tool. Use platform permissions and technical controls for enforcement; prompts are one layer of defense in depth.
 
@@ -370,7 +371,7 @@ Evaluate against a baseline rather than assuming more agents mean faster deliver
 | Quality | Escaped defects, rework, change failure rate | Speed without lower quality |
 | Verification | Required-check completion, reproducible evidence | Dependable, inspectable results |
 | Collaboration | Contract changes, overlapping edits, blocked tasks | Less friction through ownership and interfaces |
-| Review effort | Reviewer time, substantive findings, follow-up changes | Effective, manageable human review |
+| Review effort | Reviewer time, substantive findings, follow-up changes, review rounds per task, finding outcomes (fixed, disputed, intentional, ignored) | Effective review with low noise |
 | Adoption | Active teams, repeat usage, accepted template changes | Sustainable practical value |
 
 Interpret results in context. Complexity, team experience, repository maturity, model choice, and client capabilities affect outcomes. Avoid raw lines of code or agent count as proxies for business value.
@@ -423,7 +424,7 @@ A task is not complete merely because an agent says it is finished. Confirm that
 - Security findings are resolved or explicitly accepted through the proper process; no blocking finding remains unresolved.
 - Documentation and configuration match verified behavior.
 - Limitations, unverified items, and residual risks are disclosed.
-- A human has reviewed changes according to repository policy.
+- A human has reviewed changes according to repository policy and the change's review risk tier; agent review does not count as that approval.
 - Merge and release follow approved controls and separate action-specific authorization.
 
 ## A Final Thought
