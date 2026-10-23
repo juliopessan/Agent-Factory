@@ -115,7 +115,7 @@ The coordinator reviews reports and actual changed files, checks ownership compl
 
 ### 5. Verify The Actual Result
 
-Run the repository's relevant checks, not just checks suggested by an agent. Depending on the project, these include formatting, linting, type checking, unit/integration/end-to-end tests, dependency and secret scanning, accessibility checks, build validation, and manual review. Require real local execution and an observable smoke flow for the agreed delivery gate. Distinguish test doubles, emulators, and authorized live integrations. Review diffs in a clean context per the [review guide](templates/REVIEW.md): the reviewer sees only the diff, task contract, and guide; findings cite `path:line` with a failure scenario; and review stops after three rounds for a human decision instead of looping on nits.
+Run the repository's relevant checks, not just checks suggested by an agent. Depending on the project, these include formatting, linting, type checking, unit/integration/end-to-end tests, dependency and secret scanning, accessibility checks, build validation, and manual review. Require real local execution and an observable smoke flow for the agreed delivery gate. Distinguish test doubles, emulators, and authorized live integrations. Review diffs in a separate context per the [shared review policy](REVIEW.md): the reviewer receives intent, contract, diff, and evidence rather than the author's verdict; findings cite exact file and line with evidence; and after three rounds without convergence automatic iteration stops for a human decision.
 
 ### 6. Leave Evidence For The Next Person
 
@@ -146,6 +146,24 @@ People approve architecture baselines, material scope changes, sensitive operati
 ### Reuse The Workflow; Adapt The Implementation
 
 Standardize the process, but tailor project commands, coding conventions, architecture patterns, compliance obligations, and quality gates within approved platform constraints.
+
+## Shared Review Policy
+
+[REVIEW.md](REVIEW.md) defines one review policy for the existing agents: impact-based depth, evidence-backed findings, stable finding IDs and dispositions, separate-context review, and escalation after three rounds without convergence. Findings and observed metrics stay in the existing [agent report](templates/AGENT_REPORT.md) and task board; no new agent role, service, checkpoint schema, or directory is introduced.
+
+[CLAUDE.md](CLAUDE.md) is a short compatibility entry point for clients that load that filename. It points to the existing [Factory instructions](.github/copilot-instructions.md) rather than duplicating governance or approving another provider. Copilot reviews reach the same policy through the repository instructions. REVIEW.md must be read explicitly; its filename alone does not enable a reviewer.
+
+These files guide behavior, not technical merge enforcement. Automated PR review, branch rules, paid evaluations, and production approval remain separately configured and authorized. The structural tests check policy wiring and required clauses, not actual reviewer adherence or review quality. This revision does not claim a live client pilot.
+
+The personal-profile installer remains profile-only. When adopting this revision in another repository, explicitly merge the policy entry points, report additions, and applicable instructions through the existing onboarding/change process; do not overwrite the target's CLAUDE.md or REVIEW.md. Installing personal profiles does not install project policies.
+
+### Run A Review
+
+1. Give Chief of Staff the change intent, approved task/contract, actual candidate or worktree snapshot, diff, and available test evidence.
+2. Have the coordinator load the shared policy, record Quick/Standard/Deep depth based on impact, and assign an existing specialist a separate-context review within explicit ownership.
+3. Retain stable finding IDs, evidence, dispositions, and observed round counts in the existing report. Route fixes to their owners and recheck the affected behavior; after three rounds without convergence, stop automatic iteration and escalate.
+
+Run `npm run test:structure` from the kit root to validate policy links and required clauses. This does not execute a reviewer, prove independent review, or replace the product's acceptance checks.
 
 ## Repository Contents
 
@@ -196,6 +214,8 @@ Standardize the process, but tailor project commands, coding conventions, archit
 |   |-- product-pipeline.tests.ps1
 |   `-- validate-project.mjs
 |-- .gitignore
+|-- CLAUDE.md
+|-- REVIEW.md
 |-- package.json
 |-- package-lock.json
 |-- setup-local.ps1
@@ -221,7 +241,7 @@ The kit contains eight agents, shared instructions, VS Code and plain cross-clie
 | [AGENT_REPORT](templates/AGENT_REPORT.md) | Specialist returns, limitations, findings, and final delivery addendum |
 | [TASK_CONTRACT](templates/TASK_CONTRACT.md) | One accountable owner, exact write set, approved versions, dependencies, allowed commands, and acceptance evidence |
 | [CHANGE_REQUEST](templates/CHANGE_REQUEST.md) | Shared-change impact, affected tasks, approval decisions, verification, and resumption |
-| [REVIEW](templates/REVIEW.md) | Clean-context review protocol, change-decided risk tiers, failure smells, accepted false positives, repeated-finding rules, and reviewer regression cases |
+| [REVIEW](templates/REVIEW.md) | Project complement to the shared [review policy](REVIEW.md): failure smells, accepted false positives, repeated-finding rules, reviewer regression cases, and review signal quality |
 | [TEST_STRATEGY](templates/TEST_STRATEGY.md) | Automated requirement-to-gate matrix, coverage, security/SLO thresholds, evidence, and human acceptance |
 | [RELEASE_PLAN](templates/RELEASE_PLAN.md) | Immutable candidate, protected DEV/UAT/PROD promotion, approvals, migration and recovery |
 | [OPERATIONS_RUNBOOK](templates/OPERATIONS_RUNBOOK.md) | Service/support ownership, monitoring, incidents, continuity, maintenance, cost, and retirement |
@@ -340,7 +360,7 @@ Adopt the factory through existing engineering governance, not around it.
 | Task assignment | Bounded scope, one writer, acceptance criteria, permitted files, validated dependencies | Coordinator and task owner |
 | Security review | Threat-sensitive changes routed through security processes | Engineering and security owners |
 | Verification | Required checks executed with retained results | Implementer, reviewer, and CI owners |
-| Agent code review | Clean-context review, risk tier set by the change, nit and round caps, repeated findings promoted to rules | Code owners maintain the review guide; Chief of Staff applies it |
+| Agent code review | Separate-context review, impact-based depth, evidence-backed findings, three-round escalation, repeated findings promoted to rules | Code owners maintain the project review guide; Chief of Staff applies the shared policy |
 | Merge and release | Pull-request, branch protection, approval, and deployment controls | Authorized approvers and release process |
 | Operational feedback | Defects, rework, blockers, and review feedback improve templates | Team lead / engineering enablement |
 
@@ -357,7 +377,7 @@ Confirm that the selected Copilot product, settings, access, and data-handling c
 
 ### Human Oversight And Approval Gates
 
-Discovery and planning come first; product implementation begins only after named architecture, contracts, plan, and ownership versions are accepted. Release follows existing controls. Silence is not approval. An agent review or approval is evidence, never a human review, merge approval, or release decision; the change's risk tier sets the minimum number of human reviewers. Material changes to scope, contracts, architecture, ownership, platform selection, or accepted risk reopen the affected gate.
+Discovery and planning come first; product implementation begins only after named architecture, contracts, plan, and ownership versions are accepted. Release follows existing controls. Silence is not approval. An agent review or approval is evidence, never a human review, merge approval, or release decision; review depth never waives human approval. Material changes to scope, contracts, architecture, ownership, platform selection, or accepted risk reopen the affected gate.
 
 An agent instruction cannot enforce policy against a user or tool. Use platform permissions and technical controls for enforcement; prompts are one layer of defense in depth.
 
@@ -371,7 +391,7 @@ Evaluate against a baseline rather than assuming more agents mean faster deliver
 | Quality | Escaped defects, rework, change failure rate | Speed without lower quality |
 | Verification | Required-check completion, reproducible evidence | Dependable, inspectable results |
 | Collaboration | Contract changes, overlapping edits, blocked tasks | Less friction through ownership and interfaces |
-| Review effort | Reviewer time, substantive findings, follow-up changes, review rounds per task, finding outcomes (fixed, disputed, intentional, ignored) | Effective review with low noise |
+| Review effort | Reviewer time, substantive findings, follow-up changes, review rounds per task, finding dispositions (verified fixed, rejected with evidence, risk accepted) | Effective review with low noise |
 | Adoption | Active teams, repeat usage, accepted template changes | Sustainable practical value |
 
 Interpret results in context. Complexity, team experience, repository maturity, model choice, and client capabilities affect outcomes. Avoid raw lines of code or agent count as proxies for business value.
@@ -424,7 +444,7 @@ A task is not complete merely because an agent says it is finished. Confirm that
 - Security findings are resolved or explicitly accepted through the proper process; no blocking finding remains unresolved.
 - Documentation and configuration match verified behavior.
 - Limitations, unverified items, and residual risks are disclosed.
-- A human has reviewed changes according to repository policy and the change's review risk tier; agent review does not count as that approval.
+- A human has reviewed changes according to repository policy; agent review does not count as that approval.
 - Merge and release follow approved controls and separate action-specific authorization.
 
 ## A Final Thought

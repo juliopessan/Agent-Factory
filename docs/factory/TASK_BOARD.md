@@ -72,6 +72,20 @@ Existing user work at baseline: modified README.md and docs/SDLC_REVIEW.md; untr
 - Final command outcomes and script/test SHA-256 identities: [validation evidence](extensions/VALIDATION.md). Implementation is locally verified; full acceptance remains INCOMPLETE for the disclosed baseline exception and real-client pilots. No risk acceptance is fabricated.
 - Publication boundary: only the five extension-owned files are authorized for this commit. Preserve but do not stage README.md, docs/SDLC_REVIEW.md, .github/skills/ or .claude-flow/. Excluding runtime state from publication mitigates accidental disclosure; it does not retroactively prove unchanged state or grant human risk acceptance. Normal non-force push only; stop on rejected/diverged history rather than rewriting user work.
 
+## Kit Review Policy Change (Separate Scope)
+
+This section records a separate kit-maintenance request, not Phase 2 extension approval. Owner/writer: current coordinating assistant; no specialist dispatch or independent review is claimed. Authorization: user request on 2026-10-23, "Veja se Claude.md e Review.md fazem sentido e implemente as melhorias sem alterar a estrutura que ja temos"; exact time unavailable.
+
+Publication authorization: user request on 2026-10-23, "gitpus comiit e update readme", permits the README update, a commit of the eight REV-1 files below, and a normal non-force push of main to the configured origin, https://github.com/juliopessan/Copilot-Agent-Factory.git. Exclude .claude-flow/ and .github/skills/; no deployment or resource action is authorized. Git history and remote verification establish the publication outcome, not this authorization record.
+
+Bounded design/plan REV-1: retain the existing Factory architecture, roles, directories, approval authority, and runtime. Add root CLAUDE.md as a compatibility entry point and REVIEW.md as a shared behavioral policy; connect existing instructions, commander guidance, report, README, and structural checks. No service, dependency, automated merge, checkpoint-schema change, or release action. Exclusive write set: CLAUDE.md; REVIEW.md; .github/copilot-instructions.md; .github/agents/chief-of-staff.agent.md; templates/AGENT_REPORT.md; README.md; tests/validate-project.mjs; this board section only. Existing extension decisions and acceptance status remain unchanged; preserve untracked .claude-flow/ and .github/skills/.
+
+| Task | State | Acceptance And Evidence |
+| --- | --- | --- |
+| REV-001: shared policy and compatibility entry | LOCALLY VERIFIED | Existing structure and gates retained; both entry paths explicitly reference one policy. Static wiring only, not observed client adherence. |
+| REV-002: policy wiring and regression checks | PASS: LOCAL KIT | npm run test:structure: exit 0, 105 local links; pwsh -NoProfile -File ./tests/setup-local.tests.ps1: exit 0; pwsh -NoProfile -File ./tests/product-pipeline.tests.ps1: exit 0, simulated controls only; pwsh -NoProfile -File ./tests/factory-extension.tests.ps1: exit 0, 77 passed / 0 failed / 0 skipped, synthetic fixtures only. Run from kit root on 2026-10-23; editor diagnostics clear for changed validator/commander. |
+| REV-003: live reviewer adherence and quality | NOT RUN | No independent review, client pilot, paid evaluation, or technical PR gate is claimed. |
+
 ## Next Steps
 
 1. Commit and push only the verified extension files under the recorded action-specific authorization.

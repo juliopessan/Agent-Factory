@@ -36,6 +36,26 @@ Use PASS, FAIL, BLOCKED, or NOT RUN. An unexecuted command is NOT RUN. Record co
 
 State contract deviations, missing credentials/tooling, coverage gaps, running processes, and safe stop instructions. Do not repair another owner's files. Security Reviewer returns this report as text; Chief of Staff persists it.
 
+## Review Evidence
+
+For review assignments, follow [REVIEW.md](../REVIEW.md). Other assignments may mark this section N/A. Start the returned review with finding and blocker counts, or explicitly state no actionable findings in the reviewed scope; never default unknown counts to zero.
+
+| Field | Value |
+| --- | --- |
+| Policy, candidate, and reviewed scope | [REV-1; actual commit or explicit worktree snapshot; paths/exclusions] |
+| Risk tier and rationale | [Quick/Standard/Deep; impact-based reason] |
+| Reviewer and independence | [actual reviewer/session reference, self-review, or NOT RUN] |
+| Round and prior review reference | [observed round; prior report or NONE] |
+| Coverage limits and invalidated evidence | [unreviewed paths/checks; evidence requiring rerun] |
+
+Use the same finding IDs as the findings table above; this table adds lifecycle evidence rather than creating a second finding inventory. Keep unresolved findings across rounds. Hypotheses are not confirmed defects.
+
+| Finding ID | Candidate; exact file/line | Severity; blocker; origin | Verification evidence or hypothesis limit | Owner; disposition; rationale/approval |
+| --- | --- | --- | --- | --- |
+| [stable ID or NONE] | [revision; location] | [Critical/High/Medium/Low; YES/NO; INTRODUCED/PRE_EXISTING/UNKNOWN] | [reproduction/source evidence; check NOT RUN if applicable] | [owner; state from REVIEW.md; decision evidence; human reference for risk acceptance] |
+
+Record observed review rounds, confirmed/rejected finding counts, human wait time, and linked reverts/incidents when available. Use NOT OBSERVED for unknown measurements; do not infer reviewer quality from a structurally valid report. At three rounds without convergence, stop automatic iteration and escalate without clearing blockers.
+
 ## Commander Delivery Addendum
 
 For final delivery only, add integrated acceptance results, build/test/smoke evidence, Security review disposition, human-accepted residual risks, verified run/stop commands, and unverified scope. Specialist REPORTED does not mean integrated DONE. A required check that is BLOCKED or NOT RUN prevents a success claim.
