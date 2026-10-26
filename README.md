@@ -165,6 +165,16 @@ The personal-profile installer remains profile-only. When adopting this revision
 
 Run `npm run test:structure` from the kit root to validate policy links and required clauses. This does not execute a reviewer, prove independent review, or replace the product's acceptance checks.
 
+## Optional Azure Integration
+
+[Azure MCP and official Azure Skills](docs/AZURE_INTEGRATION.md) can support VS Code and Copilot CLI without changing the eight Factory roles or approval gates. Adoption is opt-in; the existing installer remains profile-only. The guide covers separate installation/activation approvals, client-specific configuration, version and bundled-hook review, least-privilege DEV inventory, and evidence requirements.
+
+Run `pwsh -NoProfile -File ./scripts/Test-FactoryAzurePrerequisites.ps1 -Client Both -AsJson` for offline application discovery. The checker does not install, authenticate, start MCP, execute discovered applications, or access Azure. Optional explicit JSON inspection validates syntax only. Skill loading, versions, permissions, tool restrictions, and live invocation remain NOT CHECKED. Missing prerequisites affect the selected Azure route, not non-Azure Factory usage.
+
+**Implementation status: acceptance pending; Azure is not activated by this kit.** Local structure checks, installer tests on PowerShell 7 and Windows PowerShell 5.1, simulated pipeline tests, and the real offline checker smoke passed. The Azure suite recorded 85 passed, zero failed and four NOT RUN symbolic-link cases; the existing companion suite recorded 72 passed and five fixture-creation failures because this Windows session lacked symbolic-link privileges. The final Azure test-path adjustment received parser/path checks, not a full behavioral rerun. Full separate-context security review and both live client pilots remain incomplete. The strict test gates are retained; publication is not acceptance or release approval. See the [task board](docs/factory/TASK_BOARD.md#azure-integration-az-1) for evidence and finding dispositions.
+
+Before activation, complete final QA on an authorized runner with link capabilities and complete the full candidate security review. Obtain separate approval for installing official Skills/MCP components, configuring the selected client, authentication, and a scoped read-only DEV pilot. Do not infer a working Azure connection from the optional integration files or a green offline diagnostic.
+
 ## Repository Contents
 
 ```text

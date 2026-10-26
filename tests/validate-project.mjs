@@ -109,4 +109,17 @@ assert(commander.includes('[REVIEW.md](../../REVIEW.md)') && commander.includes(
 for (const requirement of ['Risk tier and rationale', 'Reviewer and independence', 'Round and prior review reference', 'NOT OBSERVED', 'human reference for risk acceptance']) {
   assert(reviewReport.includes(requirement), `Missing review report field: ${requirement}`);
 }
-console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding and review policy contracts, Markdown tables/fences, and ${localLinks} local links. Conversational behavior and live review enforcement were not evaluated.`);
+const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
+const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');
+for (const requirement of ['AZ-ARCH-1', 'AZ-CON-1', 'AZ-PLAN-1', 'AZ-OWN-1', 'NOT CHECKED', '--read-only', '--tool', 'hooks', 'Copilot CLI does not read', 'separate', 'NOT RUN']) {
+  assert(azureGuide.includes(requirement), `Missing optional Azure guide contract: ${requirement}`);
+}
+for (const entry of ['prompts/BOOTSTRAP.md', '.github/agents/chief-of-staff.agent.md', '.github/agents/integrations.agent.md']) {
+  const content = readFileSync(join(root, entry), 'utf8');
+  assert(content.includes('AZURE_INTEGRATION.md') && content.includes('NOT CHECKED'), `${entry}: missing optional Azure routing or honest capability status`);
+  assert(content.includes('azure-prepare') && content.includes('azure.yaml'), `${entry}: missing conditional azd routing`);
+}
+assert(azureChecker.includes('-CommandType Application') && azureChecker.includes('LOCAL_CHECKS_COMPLETE'), 'Azure checker must expose offline discovery semantics');
+const factoryCi = parseDocument(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8')).toJS();
+assert(factoryCi.jobs.validate.steps.some(step => step.run === './tests/azure-integration.tests.ps1'), 'Factory CI must execute the offline Azure suite');
+console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding, review policy and optional Azure wiring, Markdown tables/fences, and ${localLinks} local links. Conversational behavior, live review enforcement and Azure activation were not evaluated.`);
