@@ -159,7 +159,7 @@ Scope: single offline HTML page, recorded in the approval register above. The co
 | UI-001 | Chief of Staff | tools/factory-console.html; OVERVIEW Factory Console section; README entry; this section and register row; structural validator console checks | IMPLEMENTED: AWAITING HOSTED CI |
 | UI-002 | Security Reviewer | NONE; read-only | NOT RUN: independent review outstanding |
 
-Evidence: `npm run test:structure` passes locally and executes the console core against the shipped manifest and MCP configuration. Headless Chromium (preinstalled 1194 build) loaded a synthetic copy of the page with the real manifest and a synthetic report: zero JavaScript errors, all four tabs rendered, and no horizontal overflow at the 500 px minimum viewport (485 px content). Screenshots are session-local evidence only. No user pilot has been observed.
+Evidence: `npm run test:structure` passes locally and executes the console core against the shipped manifest and MCP configuration. Headless Chromium (preinstalled 1194 build) loaded a synthetic copy of the page with the real manifest and a synthetic report: zero JavaScript errors, all four tabs rendered, and no horizontal overflow at the 500 px minimum viewport (485 px content). Screenshots are session-local evidence only. No user pilot has been observed. Copilot review on PR 2 raised five findings (smart-apostrophe quoting, dark-mode button contrast, backslash contract paths, incomplete reports shown as zero, stale exports after reload); all were verified and fixed, with validator regressions for the logic fixes and a Chromium behavior check for stale exports and incomplete reports. The page was restyled with the Ledger Design System v2 at the user's request.
 
 ## Next Steps
 

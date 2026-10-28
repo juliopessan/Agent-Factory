@@ -133,7 +133,7 @@ Limits: the ledger proves what was recorded, not that it happened. Writers can s
 
 Save a report for the Runs tab with `./scripts/Invoke-FactoryManifest.ps1 -Action Report -ProjectRoot <project> | ConvertTo-Json -Depth 10 | Set-Content -Encoding utf8 report.json`.
 
-The structural validator executes the console's core logic against the shipped `factory.json` and `.vscode/mcp.json` on every CI run, so the page cannot drift from the real contracts unnoticed. It renders all data as text and has no external code. It is original code; no Warp source (AGPL v3) is used.
+The structural validator executes the console's core logic against the shipped `factory.json` and `.vscode/mcp.json` on every CI run, so the page cannot drift from the real contracts unnoticed. It renders all data as text and has no external code. It is original code; no Warp source (AGPL v3) is used. The look follows the Ledger Design System v2: its CSS, runtime script and icon sprite are inlined, and its web fonts are not loaded because the page is offline, so the declared Arial and Menlo fallbacks render. Incomplete reports are rejected instead of shown as zero, and loading a new manifest clears any previous export.
 
 ## Next Steps
 
