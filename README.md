@@ -71,7 +71,7 @@ The factory uses a coordinator-led model. Agents have distinct responsibilities 
 | [Frontend Engineer](.github/agents/frontend.agent.md) | Implements assigned UI work within approved contracts and file boundaries. | UI components, state handling, relevant tests |
 | [Backend Engineer](.github/agents/backend.agent.md) | Implements services, domain logic, API behavior, and assigned persistence behavior. | Service code, validation, unit tests |
 | [Integrations Engineer](.github/agents/integrations.agent.md) | Handles approved Microsoft services, adapters, events, and integration boundaries. | Adapter code, mapping rules, error handling |
-| [QA Engineer](.github/agents/qa.agent.md) | Defines and executes verification, reports defects, and checks acceptance criteria. | Test plan, evidence, defect reports |
+| [QA Engineer](.github/agents/qa.agent.md) | Defines and executes verification, reports defects, and checks acceptance criteria, including pinned Playwright browser checks. | Test plan, evidence, browser evidence, defect reports |
 | [Security Reviewer](.github/agents/security.agent.md) | Reviews design and implementation within assigned scope; remains read-only and requests executable scans. | Findings, mitigations, residual-risk notes |
 | [Documentation Engineer](.github/agents/docs.agent.md) | Aligns documentation with verified implementation and execution evidence. | Setup guides, usage documentation, operational limitations |
 
@@ -175,6 +175,28 @@ Run `pwsh -NoProfile -File ./scripts/Test-FactoryAzurePrerequisites.ps1 -Client 
 
 Before activation, complete final QA on an authorized runner with link capabilities and complete the full candidate security review. Obtain separate approval for installing official Skills/MCP components, configuring the selected client, authentication, and a scoped read-only DEV pilot. Do not infer a working Azure connection from the optional integration files or a green offline diagnostic.
 
+## Factory As Code, Run Ledger And Console
+
+These additions make the Factory's structure and runs inspectable as data. They reference the existing agents, contracts, and gates; they do not dispatch agents, call models, or change approval authority. Scope, contracts, and evidence are in the [Phase 2 specification](docs/factory-extensions/PHASE2_SPEC.md), the [extension overview](docs/factory-extensions/OVERVIEW.md), and the [task board](docs/factory/TASK_BOARD.md).
+
+| Component | What It Does | Boundary |
+| --- | --- | --- |
+| [factory.json](factory.json) | Declares stages, human gates, the eight agent profiles, and the contracts by path reference | Gate invariants are fixed; a manifest that weakens one fails validation, and CI checks that every agent profile is referenced exactly once |
+| [Invoke-FactoryManifest.ps1](scripts/Invoke-FactoryManifest.ps1) | `Validate` and `Plan` read the manifest and task board; `Record` writes one immutable, provenance-tagged ledger event; `Report` derives run outcomes | PowerShell 7.2+ built-ins only; observed, reported, and human sources stay separate, and agents cannot record approvals |
+| [Factory Console](tools/factory-console.html) | Offline browser view of the manifest and saved reports, assisted manifest and Playwright configuration, and copy-only commands | Opens from disk, blocks all network access, never executes anything; `Validate` and Factory CI remain authoritative |
+| [QA browser automation](docs/QA_BROWSER_AUTOMATION.md) | Gives the QA Engineer the pinned Playwright MCP server (`@playwright/mcp@0.0.83`, Chromium by default, isolated profile, vision checks) | The server must be started and trusted in the client; Copilot CLI needs its own MCP configuration; local, DEV, or UAT targets only |
+
+```powershell
+./scripts/Invoke-FactoryManifest.ps1 -Action Validate -ProjectRoot .
+./scripts/Invoke-FactoryManifest.ps1 -Action Plan -ProjectRoot . | ConvertTo-Json -Depth 10
+./scripts/Invoke-FactoryManifest.ps1 -Action Record -ProjectRoot C:/Projects/MyApp -InputPath ./event.json -WhatIf
+./scripts/Invoke-FactoryManifest.ps1 -Action Report -ProjectRoot C:/Projects/MyApp | ConvertTo-Json -Depth 10 | Set-Content -Encoding utf8 report.json
+```
+
+Open `tools/factory-console.html` in a browser, load `factory.json` or the saved `report.json`, and review any generated file in a pull request. The console is styled with the Ledger Design System; its web fonts are not loaded because the page is offline.
+
+**Implementation status: implemented; acceptance pending.** Factory CI passed on the merged candidates (Phase 2 at `c1d23a8`, the console at `be63373`); the PowerShell suites were not run in the authoring session, and hosted CI is their only execution evidence. See the [task board](docs/factory/TASK_BOARD.md) for run references. The independent Security reviews of the run ledger (FAC-003) and the console (UI-002), the Phase 2 pilot, and starting the Playwright server in each client remain NOT RUN. The ledger records what was written, not proof that it happened; only `observed` entries with evidence files and `human` entries with references carry stronger provenance.
+
 ## Repository Contents
 
 ```text
@@ -197,14 +219,27 @@ Before activation, complete final QA on an authorized runner with link capabilit
 |   |-- workflow-templates/
 |   |   `-- product-cicd.yml
 |   `-- copilot-instructions.md
+|-- .vscode/
+|   `-- mcp.json                      # pinned Playwright MCP for QA
 |-- docs/
+|   |-- AZURE_INTEGRATION.md
 |   |-- CICD.md
-|   `-- SDLC_REVIEW.md
+|   |-- QA_BROWSER_AUTOMATION.md
+|   |-- SDLC_REVIEW.md
+|   |-- assets/ and diagrams/         # README images and Archify sources
+|   |-- factory/
+|   |   |-- TASK_BOARD.md             # kit extension approvals and evidence
+|   |   `-- extensions/VALIDATION.md
+|   `-- factory-extensions/
+|       |-- OVERVIEW.md
+|       `-- PHASE2_SPEC.md
 |-- prompts/
 |   `-- BOOTSTRAP.md
 |-- scripts/
-|   |-- Invoke-FactoryManifest.ps1
-|   `-- Invoke-ProductPipeline.ps1
+|   |-- Invoke-FactoryExtension.ps1   # Phase 1 handoffs and metrics
+|   |-- Invoke-FactoryManifest.ps1    # Phase 2 manifest and run ledger
+|   |-- Invoke-ProductPipeline.ps1
+|   `-- Test-FactoryAzurePrerequisites.ps1
 |-- templates/
 |   |-- PROJECT_BRIEF.md
 |   |-- ARCHITECTURE.md
@@ -221,12 +256,14 @@ Before activation, complete final QA on an authorized runner with link capabilit
 |-- tests/
 |   |-- fixtures/
 |   |   `-- product-hook.ps1
-|   |-- setup-local.tests.ps1
-|   |-- product-pipeline.tests.ps1
+|   |-- azure-integration.tests.ps1
+|   |-- factory-extension.tests.ps1
 |   |-- factory-manifest.tests.ps1
+|   |-- product-pipeline.tests.ps1
+|   |-- setup-local.tests.ps1
 |   `-- validate-project.mjs
 |-- tools/
-|   `-- factory-console.html
+|   `-- factory-console.html          # offline Factory Console
 |-- .gitignore
 |-- CLAUDE.md
 |-- REVIEW.md
@@ -237,7 +274,7 @@ Before activation, complete final QA on an authorized runner with link capabilit
 `-- README.md
 ```
 
-The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, twelve templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration), plus the [agent code review reference](docs/SDLC_REVIEW.md#agent-code-review-reference) and the [software factory reference](docs/SDLC_REVIEW.md#software-factory-reference) (factory stack layers, loop touchpoints, and local-first guardrails). [factory.json](factory.json) declares the Factory as code by referencing the existing agents, contracts, stages and gates; [Phase 2](docs/factory-extensions/OVERVIEW.md#phase-2-factory-as-code-and-run-ledger) validates it and records an immutable, provenance-tagged run ledger without dispatching agents. The offline [Factory Console](docs/factory-extensions/OVERVIEW.md#factory-console) shows the manifest and run reports in a browser and generates reviewed configuration without executing anything.
+The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, twelve templates, a CLI installer, a Factory-as-code manifest with a run ledger, an offline Factory Console, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration), plus the [agent code review reference](docs/SDLC_REVIEW.md#agent-code-review-reference) and the [software factory reference](docs/SDLC_REVIEW.md#software-factory-reference) (factory stack layers, loop touchpoints, and local-first guardrails). [factory.json](factory.json) declares the Factory as code by referencing the existing agents, contracts, stages and gates; [Phase 2](docs/factory-extensions/OVERVIEW.md#phase-2-factory-as-code-and-run-ledger) validates it and records an immutable, provenance-tagged run ledger without dispatching agents. The offline [Factory Console](docs/factory-extensions/OVERVIEW.md#factory-console) shows the manifest and run reports in a browser and generates reviewed configuration without executing anything.
 
 - **Agent profiles** define role, scope, tools, and working expectations.
 - **[Repository instructions](.github/copilot-instructions.md)** provide shared conventions and safety rules.
@@ -416,7 +453,7 @@ Interpret results in context. Complexity, team experience, repository maturity, 
 
 Both chat and CLI are client choices for the same approved-contract workflow. Local implementation acceptance and production release are separate gates. Follow [CI/CD adoption](docs/CICD.md), the [SDLC review](docs/SDLC_REVIEW.md), and the test/release/operations templates.
 
-[Factory CI](.github/workflows/ci.yml) checks this kit on PRs and `main`: YAML/frontmatter and link contracts, installer behavior on PowerShell 7/5.1, simulated pipeline-control regressions, and development-dependency advisories. Its success is not product acceptance. Run locally with `npm ci --ignore-scripts`, `npm run test:structure`, and the two PowerShell test suites.
+[Factory CI](.github/workflows/ci.yml) checks this kit on PRs and `main`: YAML/frontmatter and link contracts, installer behavior on PowerShell 7/5.1, simulated pipeline-control regressions, and development-dependency advisories. It also runs the offline Azure contract and Phase 2 manifest and ledger suites with synthetic fixtures, and the structural validator executes the Factory Console's core logic against the shipped `factory.json` and `.vscode/mcp.json`. Its success is not product acceptance. Run locally with `npm ci --ignore-scripts`, `npm run test:structure`, and the PowerShell suites under `tests/` (`setup-local`, `product-pipeline`, `azure-integration`, `factory-manifest`, and the Phase 1 `factory-extension` suite, which CI does not run).
 
 The [product workflow](.github/workflow-templates/product-cicd.yml) is deliberately inactive until adopted in a real product. It runs PR/push quality and build checks; an authorized manual release on protected `main` promotes one commit-bound ZIP/SBOM/manifest through DEV, UAT, and PROD using the [protected reusable deployment](.github/workflows/deploy-product.yml). Protected environment approvals are required; no resources or credentials are created by YAML.
 
@@ -434,6 +471,8 @@ Every real product hook, raw report, threshold and environment prerequisite must
 - Security Reviewer is read-only with no execution tool; Chief of Staff or QA obtains executable scan evidence. Documentation Engineer likewise relies on verified command evidence from execution-capable agents.
 - Missing tools, credentials, or endpoints remain blockers. Required NOT RUN or BLOCKED checks prevent a successful-delivery claim.
 - No centralized orchestrator, telemetry backend, policy-enforcement engine, or complete compliance package is included. The CLI installer only generates local user profiles; it does not prove runtime compatibility or enforce permissions.
+- The Factory Console and run ledger are local, file-based tools: no hosted dashboard, scheduler, executor, or multi-channel dispatch is included, and the console mirrors structure checks without confirming that referenced files exist.
+- Playwright browser checks depend on the pinned server being started and trusted in each client and on a reviewed Chromium install; desktop computer use outside the browser is not configured.
 - Client-facing output is EN-US; PT-BR notes require `[Internal]`. Agent responses stay under 8,000 characters under the operating rules.
 - Test the setup against actual repositories and client versions before broad rollout.
 
@@ -488,3 +527,4 @@ The promise of AI-assisted engineering is not simply to produce more code. It is
 3. Approve local implementation, require executed acceptance evidence, and capture lessons before broader adoption.
 4. Implement real product hooks and configure protected environments/identities before adopting the DEV/UAT/PROD workflow.
 5. Rehearse nonproduction promotion/recovery, review actual evidence, and obtain separate approval before PROD.
+6. Pilot the Factory Console and run ledger on one real work item, and complete the outstanding independent Security reviews before relying on them.
