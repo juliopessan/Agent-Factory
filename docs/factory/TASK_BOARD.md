@@ -15,6 +15,7 @@ Users: Factory operators using VS Code and Copilot CLI. Outcome: resumable, insp
 | Destructive, paid or deployment actions | Force push, provisioning, deployment, migrations, paid model calls | None | NOT AUTHORIZED |
 | Later extensions | Hooks, reviewed learning, recursion, increased parallelism | None | NOT AUTHORIZED |
 | Phase 2 Factory as Code and Run Ledger | FAC-ARCH-1, FAC-CON-1, FAC-CON-2, FAC-PLAN-1, FAC-OWN-1 in [Phase 2 specification](../factory-extensions/PHASE2_SPEC.md); planning record only | User: "aprovado JSON na raiz, dispensa a Phase 1, pode implementar", 2026-10-28; exact time unavailable. Resolves open decisions: `factory.json` at the Factory root; Phase 1 acceptance waived for Phase 2 (EXT-003 status itself unchanged) | APPROVED |
+| Factory Console UI-1 | Single offline HTML file in the repo (`tools/factory-console.html`) with overview, assisted configuration and runs panel; no server, network, execution or gate editing | User: "opção A aprovada, pode implementar com painel de runs", 2026-10-28; exact time unavailable | APPROVED |
 
 ## EXT-PLAN-1 And EXT-OWN-1
 
@@ -148,6 +149,17 @@ Scope, contracts and plan: [Phase 2 specification](../factory-extensions/PHASE2_
 | FAC-PILOT | Human operator | Disposable project only | FAC-PLAN-1 step 8 | NOT RUN |
 
 Evidence: `npm run test:structure` passes locally against the shipped manifest. PowerShell was unavailable in the authoring session and its installation was declined there, so the PowerShell suite did NOT RUN locally; Factory CI (`windows-latest`, pwsh) is the first execution. Not DONE until hosted CI passes, the independent Security review completes and a pilot is observed or explicitly waived.
+
+## Factory Console UI-1
+
+Scope: single offline HTML page, recorded in the approval register above. The coordinating assistant performed design, implementation and checks; no independent review is claimed.
+
+| Task | Owner | Exclusive write set | State |
+| --- | --- | --- | --- |
+| UI-001 | Chief of Staff | tools/factory-console.html; OVERVIEW Factory Console section; README entry; this section and register row; structural validator console checks | IMPLEMENTED: AWAITING HOSTED CI |
+| UI-002 | Security Reviewer | NONE; read-only | NOT RUN: independent review outstanding |
+
+Evidence: `npm run test:structure` passes locally and executes the console core against the shipped manifest and MCP configuration. Headless Chromium (preinstalled 1194 build) loaded a synthetic copy of the page with the real manifest and a synthetic report: zero JavaScript errors, all four tabs rendered, and no horizontal overflow at the 500 px minimum viewport (485 px content). Screenshots are session-local evidence only. No user pilot has been observed.
 
 ## Next Steps
 

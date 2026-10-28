@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; img-src data:; base-uri 'none'; form-action 'none'">
+<title>Factory Console</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #5b6470; --line: #d9dde3;
+  --accent: #0b5cad; --accent-soft: #e6f0fb; --ok: #1d7a3a; --ok-soft: #e5f4ea;
+  --warn: #8a5a00; --warn-soft: #fdf3dc; --bad: #b42318; --bad-soft: #fde8e6;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+@media (max-width: 560px) {
+  nav button { padding: 10px 10px; }
+  .panel { padding: 12px; }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111418; --panel: #1a1f25; --text: #e6e9ed; --muted: #9aa4b0; --line: #2d343c;
+    --accent: #6cb0f5; --accent-soft: #17283b; --ok: #6fd08c; --ok-soft: #15291c;
+    --warn: #f0c060; --warn-soft: #2e2512; --bad: #ff8a80; --bad-soft: #321a18;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 var(--sans); overflow-wrap: anywhere; }
+header { padding: 20px 16px 8px; max-width: 1100px; margin: 0 auto; }
+header h1 { margin: 0; font-size: 22px; }
+header p { margin: 4px 0 0; color: var(--muted); }
+nav { max-width: 1100px; margin: 12px auto 0; padding: 0 16px; display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--line); }
+nav button { flex: 0 0 auto; border: 0; background: none; color: var(--muted); padding: 10px 14px; font: inherit; cursor: pointer; border-bottom: 2px solid transparent; }
+nav button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+main { max-width: 1100px; margin: 0 auto; padding: 16px; }
+section[hidden] { display: none; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+.panel h2 { margin: 0 0 4px; font-size: 17px; }
+.panel h3 { margin: 16px 0 8px; font-size: 15px; }
+.hint { color: var(--muted); margin: 0 0 12px; font-size: 14px; }
+textarea, input[type="text"], select { width: 100%; font: 13px/1.45 var(--mono); color: var(--text); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; }
+textarea { min-height: 140px; resize: vertical; }
+label { display: block; font-weight: 600; margin: 10px 0 4px; font-size: 14px; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+button.action { border: 1px solid var(--accent); background: var(--accent); color: #fff; border-radius: 6px; padding: 7px 14px; font: inherit; cursor: pointer; }
+button.secondary { background: transparent; color: var(--accent); }
+.badge { display: inline-block; border-radius: 999px; padding: 1px 10px; font-size: 12px; font-weight: 600; }
+.badge.ok { background: var(--ok-soft); color: var(--ok); }
+.badge.warn { background: var(--warn-soft); color: var(--warn); }
+.badge.bad { background: var(--bad-soft); color: var(--bad); }
+.badge.info { background: var(--accent-soft); color: var(--accent); }
+ul.messages { margin: 8px 0 0; padding-left: 20px; }
+ul.messages li.bad { color: var(--bad); }
+ul.messages li.warn { color: var(--warn); }
+.pipeline { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.stage { background: var(--accent-soft); color: var(--accent); border-radius: 6px; padding: 6px 10px; font-weight: 600; font-size: 14px; }
+.gate { background: var(--warn-soft); color: var(--warn); border-radius: 6px; padding: 4px 8px; font-size: 12px; font-weight: 600; }
+.arrow { color: var(--muted); }
+.card { border: 1px solid var(--line); border-radius: 8px; padding: 12px; }
+.card .label { color: var(--muted); font-size: 13px; }
+.card .value { font-size: 22px; font-weight: 700; margin-top: 2px; }
+.card .value.small { font-size: 15px; }
+code, .mono { font-family: var(--mono); font-size: 13px; overflow-wrap: anywhere; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { color: var(--muted); font-weight: 600; font-size: 13px; }
+.table-wrap { overflow-x: auto; }
+details { margin-top: 6px; }
+details summary { cursor: pointer; color: var(--accent); }
+pre.command { margin: 0; white-space: pre-wrap; word-break: break-all; font: 13px/1.45 var(--mono); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 8px; flex: 1; min-width: 0; }
+.command-row { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 8px; }
+.lock { color: var(--muted); font-size: 13px; }
+footer { max-width: 1100px; margin: 0 auto; padding: 0 16px 24px; color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Factory Console</h1>
+  <p>Offline view and configuration helper for <code>factory.json</code> and run-ledger reports. It never executes commands, sends data, or approves work; <code>Invoke-FactoryManifest.ps1 -Action Validate</code> and Factory CI remain authoritative.</p>
+</header>
+<nav role="tablist" aria-label="Console sections">
+  <button role="tab" data-tab="overview" aria-selected="true">Overview</button>
+  <button role="tab" data-tab="configure" aria-selected="false">Configure</button>
+  <button role="tab" data-tab="runs" aria-selected="false">Runs</button>
+  <button role="tab" data-tab="commands" aria-selected="false">Commands</button>
+</nav>
+<main>
+  <section id="tab-overview" role="tabpanel">
+    <div class="panel">
+      <h2>Load factory.json</h2>
+      <p class="hint">Choose the file from the Factory root or paste its contents. Data stays in this page; nothing is uploaded.</p>
+      <input type="file" id="manifest-file" accept=".json,application/json">
+      <label for="manifest-text">Or paste JSON</label>
+      <textarea id="manifest-text" spellcheck="false" placeholder="{ &quot;apiVersion&quot;: &quot;copilot-agent-factory/v1alpha1&quot;, ... }"></textarea>
+      <div class="row"><button class="action" id="manifest-load">Load manifest</button><span id="manifest-status"></span></div>
+      <ul class="messages" id="manifest-messages"></ul>
+    </div>
+    <div class="panel" id="overview-body" hidden>
+      <h2 id="overview-title">Factory</h2>
+      <p class="hint" id="overview-runtime"></p>
+      <h3>Delivery stages and human gates</h3>
+      <div class="pipeline" id="overview-pipeline"></div>
+      <h3>Agents</h3>
+      <div class="table-wrap"><table><thead><tr><th>Role</th><th>Profile</th></tr></thead><tbody id="overview-agents"></tbody></table></div>
+      <h3>Contracts</h3>
+      <div class="table-wrap"><table><thead><tr><th>Contract</th><th>File</th></tr></thead><tbody id="overview-contracts"></tbody></table></div>
+      <h3>Gate invariants</h3>
+      <div class="grid" id="overview-invariants"></div>
+    </div>
+  </section>
+
+  <section id="tab-configure" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>Factory manifest</h2>
+      <p class="hint">Edit identity fields and download a manifest to review in a pull request. Gate invariants are locked: the console cannot produce a manifest that weakens them, matching <code>Validate</code>. Agent and contract paths change only through a reviewed edit of the file itself.</p>
+      <div class="grid">
+        <div><label for="cfg-name">Name</label><input type="text" id="cfg-name"></div>
+        <div><label for="cfg-version">Version (semantic)</label><input type="text" id="cfg-version"></div>
+      </div>
+      <h3>Locked gates</h3>
+      <div class="grid" id="cfg-gates"></div>
+      <div class="row"><button class="action" id="cfg-build">Generate factory.json</button><button class="action secondary" id="cfg-download">Download</button><button class="action secondary" id="cfg-copy">Copy</button><span id="cfg-status"></span></div>
+      <ul class="messages" id="cfg-messages"></ul>
+      <textarea id="cfg-output" spellcheck="false" readonly></textarea>
+    </div>
+    <div class="panel">
+      <h2>QA browser automation (Playwright MCP)</h2>
+      <p class="hint">Generates <code>.vscode/mcp.json</code> for VS Code. Copilot CLI needs its own MCP configuration. The isolated browser profile is always on.</p>
+      <div class="grid">
+        <div><label for="mcp-version">@playwright/mcp version (exact)</label><input type="text" id="mcp-version" value="0.0.83"></div>
+        <div><label for="mcp-browser">Browser</label><select id="mcp-browser"><option value="chromium">Chromium (default)</option><option value="msedge">Microsoft Edge</option></select></div>
+      </div>
+      <div class="row">
+        <label><input type="checkbox" id="mcp-headless" checked> Headless</label>
+        <label><input type="checkbox" id="mcp-vision" checked> Vision (computer-use style checks)</label>
+        <span class="lock">Isolated profile: locked on</span>
+      </div>
+      <label for="mcp-origins">Allowed origins (optional, semicolon-separated)</label>
+      <input type="text" id="mcp-origins" placeholder="http://localhost:3000;https://dev.example.internal">
+      <p class="hint">Allowed origins narrow navigation but are not a security boundary.</p>
+      <div class="row"><button class="action" id="mcp-build">Generate mcp.json</button><button class="action secondary" id="mcp-download">Download</button><button class="action secondary" id="mcp-copy">Copy</button><span id="mcp-status"></span></div>
+      <ul class="messages" id="mcp-messages"></ul>
+      <textarea id="mcp-output" spellcheck="false" readonly></textarea>
+    </div>
+  </section>
+
+  <section id="tab-runs" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>Load a run-ledger report</h2>
+      <p class="hint">Produce it with <code>./scripts/Invoke-FactoryManifest.ps1 -Action Report -ProjectRoot &lt;project&gt; | ConvertTo-Json -Depth 10 | Set-Content report.json</code>, then choose or paste the file. The console only displays what the report derived; unknown values stay NOT OBSERVED.</p>
+      <input type="file" id="report-file" accept=".json,application/json">
+      <label for="report-text">Or paste JSON</label>
+      <textarea id="report-text" spellcheck="false"></textarea>
+      <div class="row"><button class="action" id="report-load">Load report</button><span id="report-status"></span></div>
+      <ul class="messages" id="report-messages"></ul>
+    </div>
+    <div class="panel" id="runs-body" hidden>
+      <h2>Summary</h2>
+      <div class="grid" id="runs-summary"></div>
+      <h3>Runs</h3>
+      <div class="table-wrap"><table><thead><tr><th>Run</th><th>Work item</th><th>Outcome</th><th>Last stage</th><th>Checks (observed / reported)</th><th>Human review wait</th><th>Cost</th></tr></thead><tbody id="runs-table"></tbody></table></div>
+      <p class="hint" id="runs-provenance"></p>
+    </div>
+  </section>
+
+  <section id="tab-commands" role="tabpanel" hidden>
+    <div class="panel">
+      <h2>Commands</h2>
+      <p class="hint">Copy and run these yourself from the Factory root in PowerShell 7.2+. The console never runs them.</p>
+      <div class="grid">
+        <div><label for="cmd-root">Project root</label><input type="text" id="cmd-root" value="."></div>
+        <div><label for="cmd-run">Run ID</label><input type="text" id="cmd-run" value="RUN-001"></div>
+        <div><label for="cmd-event">Event file</label><input type="text" id="cmd-event" value="./event.json"></div>
+      </div>
+      <div class="row"><button class="action" id="cmd-build">Generate commands</button><span id="cmd-status"></span></div>
+      <div id="cmd-list" style="margin-top:12px"></div>
+    </div>
+  </section>
+</main>
+<footer>Copilot Agent Factory · Factory Console UI-1 · No network access (Content Security Policy blocks all requests).</footer>
+
+<script id="console-core">
+(function (root) {
+  'use strict';
+  const API_VERSION = 'copilot-agent-factory/v1alpha1';
+  const STAGES = ['triage', 'specification', 'implementation', 'verification', 'human-review', 'delivery'];
+  const GATES = ['beforeImplementation', 'beforeMerge', 'beforeRelease'];
+  const GATE_AFTER_STAGE = { beforeImplementation: 'specification', beforeMerge: 'human-review', beforeRelease: 'delivery' };
+  const TOP_FIELDS = ['apiVersion', 'kind', 'metadata', 'runtime', 'stages', 'approvalGates', 'agents', 'contracts', 'verification', 'delivery'];
+  const CONTRACTS = ['task', 'architecture', 'implementationPlan', 'testStrategy', 'agentReport', 'reviewPolicy', 'projectReviewGuide'];
+  const INVARIANTS = {
+    verification: ['requireExecutedChecks', 'requireEvidenceForPass', 'failOnBlockingFindings'],
+    delivery: ['mergeRequiresHumanApproval', 'releaseRequiresSeparateAuthorization']
+  };
+  const SECRET = /(?:password|passwd|secret|api[_-]?key|access[_-]?token)\s*[:=]\s*\S+|-----BEGIN[ A-Z]*PRIVATE KEY-----|\bBearer\s+\S+|\b(?:gh[pousr]_[A-Za-z0-9_]{16,}|github_pat_[A-Za-z0-9_]{16,}|sk-[A-Za-z0-9_-]{16,})/i;
+  const SEMVER = /^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$/;
+  const PROFILE = /^\.github\/agents\/[a-z0-9-]+\.agent\.md$/;
+
+  const isObject = value => value !== null && typeof value === 'object' && !Array.isArray(value);
+  const sameKeys = (value, keys) => isObject(value) && Object.keys(value).length === keys.length && keys.every(key => Object.prototype.hasOwnProperty.call(value, key));
+  const sameList = (value, expected) => Array.isArray(value) && value.length === expected.length && expected.every((item, index) => value[index] === item);
+  const containedPath = value => typeof value === 'string' && value.length > 0 && !value.startsWith('/') && !value.includes(':') && !value.includes('\\') &&
+    value.split('/').every(part => part !== '' && part !== '.' && part !== '..');
+
+  function validateManifest(manifest) {
+    const errors = [];
+    const warnings = ['Referenced files are not checked here; run Validate, which confirms each file exists and is not a link.'];
+    if (SECRET.test(JSON.stringify(manifest))) errors.push('Credential-like metadata is not permitted.');
+    if (!sameKeys(manifest, TOP_FIELDS)) { errors.push('Missing or unknown manifest field.'); return { errors, warnings }; }
+    if (manifest.apiVersion !== API_VERSION || manifest.kind !== 'Factory') errors.push('Unsupported manifest apiVersion or kind.');
+    if (!sameKeys(manifest.metadata, ['name', 'version'])) errors.push('Missing or unknown manifest metadata field.');
+    else {
+      if (typeof manifest.metadata.name !== 'string' || !/^[a-z0-9][a-z0-9-]{0,63}$/.test(manifest.metadata.name)) errors.push('Invalid manifest name (lowercase letters, digits and hyphens).');
+      if (typeof manifest.metadata.version !== 'string' || !SEMVER.test(manifest.metadata.version)) errors.push('Manifest version must be semantic.');
+    }
+    if (!sameKeys(manifest.runtime, ['provider', 'executionMode']) || manifest.runtime.provider !== 'github-copilot' || manifest.runtime.executionMode !== 'local') {
+      errors.push('Unsupported runtime provider or execution mode.');
+    }
+    if (!sameList(manifest.stages, STAGES)) errors.push('Manifest stages must list every supported stage in order.');
+    if (!sameList(manifest.approvalGates, GATES)) errors.push('Manifest approval gates must list every required gate in order.');
+    if (!sameKeys(manifest.agents, ['coordinator', 'architect', 'implementation', 'verification'])) errors.push('Missing or unknown manifest agents field.');
+    else {
+      const profiles = [manifest.agents.coordinator, manifest.agents.architect];
+      for (const group of ['implementation', 'verification']) {
+        if (!Array.isArray(manifest.agents[group]) || manifest.agents[group].length === 0) errors.push('Agent groups must list at least one profile path.');
+        else profiles.push(...manifest.agents[group]);
+      }
+      const seen = new Set();
+      for (const profile of profiles) {
+        if (typeof profile !== 'string' || !PROFILE.test(profile)) errors.push('Agent references must be .github/agents/*.agent.md profiles.');
+        else if (seen.has(profile.toLowerCase())) errors.push('Each agent profile may appear only once.');
+        else seen.add(profile.toLowerCase());
+      }
+    }
+    if (!sameKeys(manifest.contracts, CONTRACTS)) errors.push('Missing or unknown manifest contracts field.');
+    else {
+      for (const name of CONTRACTS) {
+        const reference = manifest.contracts[name];
+        if (typeof reference !== 'string' || !reference.endsWith('.md')) errors.push('Contract references must be Markdown files.');
+        else if (!containedPath(reference)) errors.push('Expected a contained project-relative path.');
+      }
+    }
+    for (const [section, names] of Object.entries(INVARIANTS)) {
+      if (!sameKeys(manifest[section], names)) { errors.push(`Missing or unknown manifest ${section} field.`); continue; }
+      for (const name of names) if (manifest[section][name] !== true) errors.push(`Manifest gate invariant weakened: ${name}.`);
+    }
+    return { errors: [...new Set(errors)], warnings };
+  }
+
+  function buildManifest(base, edits) {
+    const next = JSON.parse(JSON.stringify(base));
+    if (edits && typeof edits.name === 'string') next.metadata.name = edits.name.trim();
+    if (edits && typeof edits.version === 'string') next.metadata.version = edits.version.trim();
+    for (const [section, names] of Object.entries(INVARIANTS)) {
+      next[section] = {};
+      for (const name of names) next[section][name] = true;
+    }
+    const result = validateManifest(next);
+    return { manifest: next, text: JSON.stringify(next, null, 2) + '\n', errors: result.errors };
+  }
+
+  function buildMcpConfig(options) {
+    const errors = [];
+    const warnings = [];
+    const version = String(options.version || '').trim();
+    if (!SEMVER.test(version)) errors.push('Use an exact @playwright/mcp version such as 0.0.83, never latest or a range.');
+    if (!['chromium', 'msedge'].includes(options.browser)) errors.push('Browser must be chromium or msedge.');
+    if (options.browser === 'msedge') warnings.push('The repository validator requires --browser=chromium; switching the committed default to Edge needs an approved change.');
+    const args = [`@playwright/mcp@${version}`, `--browser=${options.browser}`, '--isolated'];
+    if (options.headless) args.push('--headless');
+    if (options.vision) args.push('--caps=vision');
+    const origins = String(options.allowedOrigins || '').trim();
+    if (origins) {
+      const list = origins.split(';').map(item => item.trim()).filter(Boolean);
+      if (list.some(item => !/^https?:\/\/[^\s;/]+$/.test(item))) errors.push('Allowed origins must be scheme://host[:port] values separated by semicolons.');
+      args.push(`--allowed-origins=${list.join(';')}`);
+      warnings.push('Allowed origins are not a security boundary; enforce access with network policy and identities.');
+    }
+    const config = { servers: { playwright: { type: 'stdio', command: 'npx', args } } };
+    return { config, text: JSON.stringify(config, null, 2) + '\n', errors, warnings };
+  }
+
+  const known = value => value === null || value === undefined ? null : value;
+  const asArray = value => Array.isArray(value) ? value : (value === null || value === undefined ? [] : [value]);
+
+  function normalizeReport(report) {
+    if (!isObject(report) || report.Status !== 'REPORTED_LEDGER') throw new Error('Not a run-ledger report: expected Status REPORTED_LEDGER from Invoke-FactoryManifest.ps1 -Action Report.');
+    const summary = isObject(report.Summary) ? report.Summary : {};
+    const runs = asArray(report.Runs).map(run => {
+      const checks = isObject(run.Checks) ? run.Checks : {};
+      const count = (type, status) => isObject(checks[type]) && typeof checks[type][status] === 'number' ? checks[type][status] : 0;
+      const totals = type => ['PASS', 'FAIL', 'BLOCKED', 'NOT_RUN'].reduce((sum, status) => sum + count(type, status), 0);
+      return {
+        runId: String(run.RunId ?? ''),
+        workItemId: String(run.WorkItemId ?? ''),
+        outcome: String(run.Outcome ?? 'UNKNOWN'),
+        lastStage: known(run.LastStage),
+        violations: asArray(run.Violations).map(String),
+        observedPass: count('observed', 'PASS'), observedTotal: totals('observed'),
+        reportedPass: count('reported', 'PASS'), reportedTotal: totals('reported'),
+        humanReviewWaitSeconds: known(run.HumanReviewWaitSeconds),
+        accepted: run.Accepted === true,
+        firstAttemptAccepted: run.FirstAttemptAccepted === true,
+        costUsd: known(run.CostUsd),
+        stageEnteredAtUtc: isObject(run.StageEnteredAtUtc) ? run.StageEnteredAtUtc : {}
+      };
+    });
+    return {
+      runs,
+      summary: {
+        runs: runs.length,
+        withViolations: typeof summary.WithViolations === 'number' ? summary.WithViolations : runs.filter(run => run.violations.length).length,
+        accepted: typeof summary.Accepted === 'number' ? summary.Accepted : runs.filter(run => run.accepted).length,
+        firstAttemptAccepted: typeof summary.FirstAttemptAccepted === 'number' ? summary.FirstAttemptAccepted : runs.filter(run => run.firstAttemptAccepted).length,
+        costKnownRuns: typeof summary.CostKnownRuns === 'number' ? summary.CostKnownRuns : null,
+        costUnknownRuns: typeof summary.CostUnknownRuns === 'number' ? summary.CostUnknownRuns : null,
+        costPerAcceptedUsd: known(summary.CostPerAcceptedUsd),
+        provenance: typeof summary.Provenance === 'string' ? summary.Provenance : ''
+      }
+    };
+  }
+
+  function outcomeTone(outcome) {
+    if (outcome === 'COMPLETED_PASS') return 'ok';
+    if (outcome === 'GOVERNANCE_VIOLATIONS' || outcome === 'COMPLETED_FAIL') return 'bad';
+    if (outcome === 'IN_PROGRESS') return 'info';
+    return 'warn';
+  }
+
+  function formatSeconds(value) {
+    if (value === null || value === undefined) return 'NOT OBSERVED';
+    const seconds = Number(value);
+    if (!Number.isFinite(seconds)) return 'NOT OBSERVED';
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.round(seconds / 60);
+    return minutes < 120 ? `${minutes} min` : `${(minutes / 60).toFixed(1)} h`;
+  }
+
+  const formatCost = value => value === null || value === undefined || !Number.isFinite(Number(value)) ? 'NOT OBSERVED' : `USD ${Number(value).toFixed(2)}`;
+  const quote = value => `'${String(value).replace(/'/g, "''")}'`;
+
+  function buildCommands(projectRoot, runId, eventPath) {
+    const rootArg = quote(projectRoot || '.');
+    const script = './scripts/Invoke-FactoryManifest.ps1';
+    return [
+      { label: 'Validate the manifest (read-only)', command: `${script} -Action Validate -ProjectRoot ${rootArg}` },
+      { label: 'Show the execution plan (read-only)', command: `${script} -Action Plan -ProjectRoot ${rootArg} | ConvertTo-Json -Depth 10` },
+      { label: 'Preview recording an event (no write)', command: `${script} -Action Record -ProjectRoot ${rootArg} -InputPath ${quote(eventPath || './event.json')} -WhatIf` },
+      { label: 'Record an event (writes one immutable ledger file)', command: `${script} -Action Record -ProjectRoot ${rootArg} -InputPath ${quote(eventPath || './event.json')}` },
+      { label: 'Report one run', command: `${script} -Action Report -ProjectRoot ${rootArg} -RunId ${quote(runId || 'RUN-001')} | ConvertTo-Json -Depth 10` },
+      { label: 'Save a report for the Runs tab', command: `${script} -Action Report -ProjectRoot ${rootArg} | ConvertTo-Json -Depth 10 | Set-Content -Encoding utf8 report.json` }
+    ];
+  }
+
+  root.FactoryConsole = { STAGES, GATES, GATE_AFTER_STAGE, INVARIANTS, validateManifest, buildManifest, buildMcpConfig, normalizeReport, outcomeTone, formatSeconds, formatCost, buildCommands };
+})(globalThis);
+</script>
+
+<script>
+(function () {
+  'use strict';
+  const core = globalThis.FactoryConsole;
+  const $ = id => document.getElementById(id);
+  let manifest = null;
+
+  function element(tag, options) {
+    const node = document.createElement(tag);
+    if (options && options.text !== undefined) node.textContent = options.text;
+    if (options && options.className) node.className = options.className;
+    return node;
+  }
+  function badge(text, tone) { return element('span', { text, className: `badge ${tone}` }); }
+  function setStatus(id, text, tone) { const target = $(id); target.replaceChildren(text ? badge(text, tone) : ''); }
+  function setMessages(id, errors, warnings) {
+    const list = $(id);
+    list.replaceChildren(...errors.map(text => element('li', { text, className: 'bad' })), ...(warnings || []).map(text => element('li', { text, className: 'warn' })));
+  }
+  function readFile(input, target) {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    if (file.size > 1048576) { target.value = ''; alert('File is larger than 1 MiB.'); return; }
+    file.text().then(text => { target.value = text; });
+  }
+  function parse(text) {
+    try { return { value: JSON.parse(text.replace(/^﻿/, '')) }; }
+    catch (error) { return { error: `Invalid JSON: ${error.message}` }; }
+  }
+  function download(name, text) {
+    const url = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    const link = element('a');
+    link.href = url; link.download = name;
+    document.body.append(link); link.click(); link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  function copy(text, statusId) {
+    const done = () => setStatus(statusId, 'Copied', 'ok');
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, () => setStatus(statusId, 'Copy blocked: select the text manually', 'warn'));
+    else setStatus(statusId, 'Copy unavailable: select the text manually', 'warn');
+  }
+
+  document.querySelectorAll('nav button').forEach(button => button.addEventListener('click', () => {
+    document.querySelectorAll('nav button').forEach(other => other.setAttribute('aria-selected', String(other === button)));
+    document.querySelectorAll('main > section').forEach(section => { section.hidden = section.id !== `tab-${button.dataset.tab}`; });
+  }));
+
+  $('manifest-file').addEventListener('change', () => readFile($('manifest-file'), $('manifest-text')));
+  $('report-file').addEventListener('change', () => readFile($('report-file'), $('report-text')));
+
+  function renderOverview() {
+    $('overview-body').hidden = false;
+    $('overview-title').textContent = `${manifest.metadata.name} · v${manifest.metadata.version}`;
+    $('overview-runtime').textContent = `Runtime: ${manifest.runtime.provider}, ${manifest.runtime.executionMode} execution. ${manifest.apiVersion}`;
+    const pipeline = $('overview-pipeline');
+    pipeline.replaceChildren();
+    manifest.stages.forEach((stage, index) => {
+      if (index) pipeline.append(element('span', { text: '→', className: 'arrow' }));
+      pipeline.append(element('span', { text: stage, className: 'stage' }));
+      for (const [gate, after] of Object.entries(core.GATE_AFTER_STAGE)) {
+        if (after === stage && manifest.approvalGates.includes(gate)) pipeline.append(element('span', { text: `🔒 ${gate}`, className: 'gate' }));
+      }
+    });
+    const agents = $('overview-agents');
+    agents.replaceChildren();
+    const rows = [['coordinator', manifest.agents.coordinator], ['architect', manifest.agents.architect]]
+      .concat(manifest.agents.implementation.map(path => ['implementation', path]), manifest.agents.verification.map(path => ['verification', path]));
+    for (const [role, path] of rows) {
+      const row = element('tr');
+      row.append(element('td', { text: role }), element('td', { text: path, className: 'mono' }));
+      agents.append(row);
+    }
+    const contracts = $('overview-contracts');
+    contracts.replaceChildren();
+    for (const [name, path] of Object.entries(manifest.contracts)) {
+      const row = element('tr');
+      row.append(element('td', { text: name }), element('td', { text: path, className: 'mono' }));
+      contracts.append(row);
+    }
+    const invariants = $('overview-invariants');
+    invariants.replaceChildren();
+    for (const [section, names] of Object.entries(core.INVARIANTS)) {
+      for (const name of names) {
+        const card = element('div', { className: 'card' });
+        card.append(element('div', { text: section, className: 'label' }), element('div', { text: name, className: 'value small' }), badge(manifest[section][name] === true ? 'enforced' : 'weakened', manifest[section][name] === true ? 'ok' : 'bad'));
+        invariants.append(card);
+      }
+    }
+    $('cfg-name').value = manifest.metadata.name;
+    $('cfg-version').value = manifest.metadata.version;
+    const gates = $('cfg-gates');
+    gates.replaceChildren();
+    for (const names of Object.values(core.INVARIANTS)) {
+      for (const name of names) {
+        const label = element('label');
+        const box = element('input'); box.type = 'checkbox'; box.checked = true; box.disabled = true;
+        label.append(box, document.createTextNode(` ${name} `), element('span', { text: '(locked)', className: 'lock' }));
+        gates.append(label);
+      }
+    }
+  }
+
+  $('manifest-load').addEventListener('click', () => {
+    const parsed = parse($('manifest-text').value);
+    if (parsed.error) { setStatus('manifest-status', 'Not loaded', 'bad'); setMessages('manifest-messages', [parsed.error]); return; }
+    const result = core.validateManifest(parsed.value);
+    setMessages('manifest-messages', result.errors, result.warnings);
+    if (result.errors.length) { setStatus('manifest-status', `${result.errors.length} problem(s)`, 'bad'); $('overview-body').hidden = true; manifest = null; return; }
+    manifest = parsed.value;
+    setStatus('manifest-status', 'Structure valid in console', 'ok');
+    renderOverview();
+  });
+
+  let manifestText = '';
+  $('cfg-build').addEventListener('click', () => {
+    if (!manifest) { setStatus('cfg-status', 'Load a valid manifest first', 'warn'); return; }
+    const result = core.buildManifest(manifest, { name: $('cfg-name').value, version: $('cfg-version').value });
+    setMessages('cfg-messages', result.errors, result.errors.length ? [] : ['Review the change in a pull request; Factory CI runs Validate on it.']);
+    manifestText = result.errors.length ? '' : result.text;
+    $('cfg-output').value = manifestText;
+    setStatus('cfg-status', result.errors.length ? 'Not generated' : 'Generated', result.errors.length ? 'bad' : 'ok');
+  });
+  $('cfg-download').addEventListener('click', () => manifestText ? download('factory.json', manifestText) : setStatus('cfg-status', 'Generate first', 'warn'));
+  $('cfg-copy').addEventListener('click', () => manifestText ? copy(manifestText, 'cfg-status') : setStatus('cfg-status', 'Generate first', 'warn'));
+
+  let mcpText = '';
+  $('mcp-build').addEventListener('click', () => {
+    const result = core.buildMcpConfig({ version: $('mcp-version').value, browser: $('mcp-browser').value, headless: $('mcp-headless').checked, vision: $('mcp-vision').checked, allowedOrigins: $('mcp-origins').value });
+    setMessages('mcp-messages', result.errors, result.warnings);
+    mcpText = result.errors.length ? '' : result.text;
+    $('mcp-output').value = mcpText;
+    setStatus('mcp-status', result.errors.length ? 'Not generated' : 'Generated', result.errors.length ? 'bad' : 'ok');
+  });
+  $('mcp-download').addEventListener('click', () => mcpText ? download('mcp.json', mcpText) : setStatus('mcp-status', 'Generate first', 'warn'));
+  $('mcp-copy').addEventListener('click', () => mcpText ? copy(mcpText, 'mcp-status') : setStatus('mcp-status', 'Generate first', 'warn'));
+
+  function card(label, value, tone) {
+    const node = element('div', { className: 'card' });
+    node.append(element('div', { text: label, className: 'label' }), element('div', { text: String(value), className: 'value' }));
+    if (tone) node.append(badge(tone.text, tone.kind));
+    return node;
+  }
+
+  $('report-load').addEventListener('click', () => {
+    const parsed = parse($('report-text').value);
+    if (parsed.error) { setStatus('report-status', 'Not loaded', 'bad'); setMessages('report-messages', [parsed.error]); return; }
+    let model;
+    try { model = core.normalizeReport(parsed.value); }
+    catch (error) { setStatus('report-status', 'Not loaded', 'bad'); setMessages('report-messages', [error.message]); $('runs-body').hidden = true; return; }
+    setMessages('report-messages', [], model.summary.costUnknownRuns ? [`${model.summary.costUnknownRuns} run(s) have unknown cost, so cost per accepted run is not computed.`] : []);
+    setStatus('report-status', `${model.runs.length} run(s)`, 'ok');
+    $('runs-body').hidden = false;
+    const s = model.summary;
+    $('runs-summary').replaceChildren(
+      card('Runs', s.runs),
+      card('With governance violations', s.withViolations, s.withViolations ? { text: 'review', kind: 'bad' } : { text: 'none', kind: 'ok' }),
+      card('Accepted', s.accepted),
+      card('First-attempt accepted', s.firstAttemptAccepted),
+      card('Cost per accepted run', core.formatCost(s.costPerAcceptedUsd)),
+      card('Cost coverage', s.costKnownRuns === null ? 'NOT OBSERVED' : `${s.costKnownRuns} known / ${s.costUnknownRuns} unknown`)
+    );
+    const table = $('runs-table');
+    table.replaceChildren();
+    for (const run of model.runs) {
+      const row = element('tr');
+      const outcome = element('td');
+      outcome.append(badge(run.outcome, core.outcomeTone(run.outcome)));
+      if (run.violations.length) {
+        const details = element('details');
+        details.append(element('summary', { text: `${run.violations.length} violation(s)` }));
+        const list = element('ul', { className: 'messages' });
+        run.violations.forEach(text => list.append(element('li', { text, className: 'bad' })));
+        details.append(list);
+        outcome.append(details);
+      }
+      const stages = element('details');
+      stages.append(element('summary', { text: 'Stage timeline' }));
+      const timeline = element('ul', { className: 'messages' });
+      for (const stage of core.STAGES) timeline.append(element('li', { text: `${stage}: ${run.stageEnteredAtUtc[stage] || 'NOT OBSERVED'}` }));
+      stages.append(timeline);
+      const runCell = element('td', { text: run.runId, className: 'mono' });
+      runCell.append(stages);
+      row.append(
+        runCell,
+        element('td', { text: run.workItemId, className: 'mono' }),
+        outcome,
+        element('td', { text: run.lastStage || 'NOT OBSERVED' }),
+        element('td', { text: `${run.observedPass}/${run.observedTotal} PASS observed · ${run.reportedPass}/${run.reportedTotal} reported` }),
+        element('td', { text: core.formatSeconds(run.humanReviewWaitSeconds) }),
+        element('td', { text: core.formatCost(run.costUsd) })
+      );
+      table.append(row);
+    }
+    $('runs-provenance').textContent = s.provenance;
+  });
+
+  $('cmd-build').addEventListener('click', () => {
+    const list = $('cmd-list');
+    list.replaceChildren();
+    for (const item of core.buildCommands($('cmd-root').value, $('cmd-run').value, $('cmd-event').value)) {
+      list.append(element('div', { text: item.label, className: 'label' }));
+      const row = element('div', { className: 'command-row' });
+      const pre = element('pre', { text: item.command, className: 'command' });
+      const button = element('button', { text: 'Copy', className: 'action secondary' });
+      button.addEventListener('click', () => copy(item.command, 'cmd-status'));
+      row.append(pre, button);
+      list.append(row);
+    }
+    setStatus('cmd-status', 'Generated; run them yourself', 'info');
+  });
+})();
+</script>
+</body>
+</html>

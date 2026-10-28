@@ -3,6 +3,7 @@ import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseDocument } from 'yaml';
+import { runInNewContext } from 'node:vm';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 function filesAt(directory) {
@@ -141,6 +142,27 @@ assert(qaProfile.includes("'playwright/*'") && qaProfile.includes('QA_BROWSER_AU
 assert(playwrightMcp.args.some(arg => /^@playwright\/mcp@\d+\.\d+\.\d+$/.test(arg)) && !playwrightMcp.args.some(arg => arg.includes('@latest')), 'Playwright MCP must be pinned to an exact version');
 assert(playwrightMcp.args.includes('--isolated'), 'Playwright MCP must use an isolated browser profile');
 assert(playwrightMcp.args.includes('--browser=chromium'), 'Playwright MCP must select Chromium explicitly');
+const consoleHtml = readFileSync(join(root, 'tools/factory-console.html'), 'utf8');
+assert(/Content-Security-Policy" content="default-src 'none'/.test(consoleHtml), 'Factory Console must block all network access with CSP');
+assert(!/<script[^>]+src=|<link[^>]+href=|innerHTML|outerHTML|insertAdjacentHTML|eval\(|new Function|fetch\(|XMLHttpRequest|WebSocket/.test(consoleHtml), 'Factory Console must stay offline and render data as text');
+const consoleCore = consoleHtml.match(/<script id="console-core">([\s\S]*?)<\/script>/)[1];
+const consoleSandbox = {};
+runInNewContext(consoleCore, { globalThis: consoleSandbox });
+const factoryConsole = consoleSandbox.FactoryConsole;
+const shippedConsoleErrors = factoryConsole.validateManifest(factoryManifest).errors;
+assert.equal(shippedConsoleErrors.length, 0, `Factory Console must accept the shipped manifest: ${shippedConsoleErrors.join('; ')}`);
+const weakenedManifest = JSON.parse(JSON.stringify(factoryManifest)); weakenedManifest.delivery.mergeRequiresHumanApproval = false;
+assert(factoryConsole.validateManifest(weakenedManifest).errors.some(error => error.includes('gate invariant weakened')), 'Factory Console must reject weakened gates');
+assert(factoryConsole.validateManifest({ ...factoryManifest, autoMerge: true }).errors.length > 0, 'Factory Console must reject unknown manifest fields');
+const rebuiltManifest = factoryConsole.buildManifest(weakenedManifest, { name: 'renamed-factory', version: '0.2.0' });
+assert(rebuiltManifest.errors.length === 0 && rebuiltManifest.manifest.delivery.mergeRequiresHumanApproval === true, 'Factory Console must restore locked gates when generating a manifest');
+const consoleMcp = factoryConsole.buildMcpConfig({ version: '0.0.83', browser: 'chromium', headless: true, vision: true, allowedOrigins: '' });
+assert.deepEqual(JSON.parse(JSON.stringify(consoleMcp.config.servers.playwright)), playwrightMcp, 'Factory Console must generate the committed Playwright MCP configuration');
+assert(factoryConsole.buildMcpConfig({ version: 'latest', browser: 'chromium' }).errors.length > 0, 'Factory Console must refuse unpinned Playwright versions');
+const consoleReport = factoryConsole.normalizeReport({ Status: 'REPORTED_LEDGER', Runs: { RunId: 'RUN-001', WorkItemId: 'WI-001', Outcome: 'COMPLETED_PASS', Violations: [], Checks: { observed: { PASS: 1 } }, CostUsd: null }, Summary: { CostPerAcceptedUsd: null, CostKnownRuns: 0, CostUnknownRuns: 1 } });
+assert(consoleReport.runs.length === 1 && factoryConsole.formatCost(consoleReport.summary.costPerAcceptedUsd) === 'NOT OBSERVED' && factoryConsole.formatSeconds(null) === 'NOT OBSERVED', 'Factory Console must keep unknown report values NOT OBSERVED');
+assert.throws(() => factoryConsole.normalizeReport({ Status: 'VALID' }), /REPORTED_LEDGER/, 'Factory Console must reject non-report JSON');
+assert(factoryConsole.buildCommands("C:/Projects/O'Brien", 'RUN-001', './e.json')[0].command.endsWith("'C:/Projects/O''Brien'"), 'Factory Console must quote PowerShell arguments');
 const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
 const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');
 for (const requirement of ['AZ-ARCH-1', 'AZ-CON-1', 'AZ-PLAN-1', 'AZ-OWN-1', 'NOT CHECKED', '--read-only', '--tool', 'hooks', 'Copilot CLI does not read', 'separate', 'NOT RUN']) {

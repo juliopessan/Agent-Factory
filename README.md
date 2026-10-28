@@ -225,6 +225,8 @@ Before activation, complete final QA on an authorized runner with link capabilit
 |   |-- product-pipeline.tests.ps1
 |   |-- factory-manifest.tests.ps1
 |   `-- validate-project.mjs
+|-- tools/
+|   `-- factory-console.html
 |-- .gitignore
 |-- CLAUDE.md
 |-- REVIEW.md
@@ -235,7 +237,7 @@ Before activation, complete final QA on an authorized runner with link capabilit
 `-- README.md
 ```
 
-The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, twelve templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration), plus the [agent code review reference](docs/SDLC_REVIEW.md#agent-code-review-reference) and the [software factory reference](docs/SDLC_REVIEW.md#software-factory-reference) (factory stack layers, loop touchpoints, and local-first guardrails). [factory.json](factory.json) declares the Factory as code by referencing the existing agents, contracts, stages and gates; [Phase 2](docs/factory-extensions/OVERVIEW.md#phase-2-factory-as-code-and-run-ledger) validates it and records an immutable, provenance-tagged run ledger without dispatching agents.
+The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, twelve templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration), plus the [agent code review reference](docs/SDLC_REVIEW.md#agent-code-review-reference) and the [software factory reference](docs/SDLC_REVIEW.md#software-factory-reference) (factory stack layers, loop touchpoints, and local-first guardrails). [factory.json](factory.json) declares the Factory as code by referencing the existing agents, contracts, stages and gates; [Phase 2](docs/factory-extensions/OVERVIEW.md#phase-2-factory-as-code-and-run-ledger) validates it and records an immutable, provenance-tagged run ledger without dispatching agents. The offline [Factory Console](docs/factory-extensions/OVERVIEW.md#factory-console) shows the manifest and run reports in a browser and generates reviewed configuration without executing anything.
 
 - **Agent profiles** define role, scope, tools, and working expectations.
 - **[Repository instructions](.github/copilot-instructions.md)** provide shared conventions and safety rules.
