@@ -232,7 +232,7 @@ Before activation, complete final QA on an authorized runner with link capabilit
 `-- README.md
 ```
 
-The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, twelve templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration), plus the [agent code review reference](docs/SDLC_REVIEW.md#agent-code-review-reference).
+The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, twelve templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration), plus the [agent code review reference](docs/SDLC_REVIEW.md#agent-code-review-reference) and the [software factory reference](docs/SDLC_REVIEW.md#software-factory-reference) (factory stack layers, loop touchpoints, and local-first guardrails).
 
 - **Agent profiles** define role, scope, tools, and working expectations.
 - **[Repository instructions](.github/copilot-instructions.md)** provide shared conventions and safety rules.
@@ -397,11 +397,12 @@ Evaluate against a baseline rather than assuming more agents mean faster deliver
 
 | Dimension | Example Measures | What To Look For |
 | --- | --- | --- |
-| Flow | Lead time, cycle time, dependency waits | Reduced coordination delays |
+| Flow | Lead time, cycle time, dependency waits, kickoff to first PR, PR to first human review, review to merge | Reduced coordination and human-wait delays |
 | Quality | Escaped defects, rework, change failure rate | Speed without lower quality |
 | Verification | Required-check completion, reproducible evidence | Dependable, inspectable results |
 | Collaboration | Contract changes, overlapping edits, blocked tasks | Less friction through ownership and interfaces |
 | Review effort | Reviewer time, substantive findings, follow-up changes, review rounds per task, finding dispositions (verified fixed, rejected with evidence, risk accepted) | Effective review with low noise |
+| Model and harness fit | Correctness and cost per task type on the team's own representative tasks | Evidence-based model or effort choices within approved services |
 | Adoption | Active teams, repeat usage, accepted template changes | Sustainable practical value |
 
 Interpret results in context. Complexity, team experience, repository maturity, model choice, and client capabilities affect outcomes. Avoid raw lines of code or agent count as proxies for business value.

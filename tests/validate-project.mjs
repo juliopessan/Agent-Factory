@@ -118,6 +118,11 @@ for (const requirement of [
 for (const entry of ['.github/copilot-instructions.md', '.github/agents/chief-of-staff.agent.md']) {
   assert(readFileSync(join(root, entry), 'utf8').includes('templates/REVIEW.md'), `${entry}: missing project review guide`);
 }
+const sdlcReview = readFileSync(join(root, 'docs/SDLC_REVIEW.md'), 'utf8');
+for (const requirement of [
+  '## Software Factory Reference', 'Factory as code', 'Measure before routing', 'Improvement stays reviewed',
+  'never self-modifies its governance', 'within approved Microsoft services', 'Two human roles',
+]) assert(sdlcReview.includes(requirement), `Missing software factory reference contract: ${requirement}`);
 const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
 const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');
 for (const requirement of ['AZ-ARCH-1', 'AZ-CON-1', 'AZ-PLAN-1', 'AZ-OWN-1', 'NOT CHECKED', '--read-only', '--tool', 'hooks', 'Copilot CLI does not read', 'separate', 'NOT RUN']) {
