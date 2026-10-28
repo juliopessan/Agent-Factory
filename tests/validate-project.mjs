@@ -140,6 +140,7 @@ const playwrightMcp = JSON.parse(readFileSync(join(root, '.vscode/mcp.json'), 'u
 assert(qaProfile.includes("'playwright/*'") && qaProfile.includes('QA_BROWSER_AUTOMATION.md') && qaProfile.includes('mark browser checks NOT RUN'), 'QA profile must expose bounded Playwright verification');
 assert(playwrightMcp.args.some(arg => /^@playwright\/mcp@\d+\.\d+\.\d+$/.test(arg)) && !playwrightMcp.args.some(arg => arg.includes('@latest')), 'Playwright MCP must be pinned to an exact version');
 assert(playwrightMcp.args.includes('--isolated'), 'Playwright MCP must use an isolated browser profile');
+assert(playwrightMcp.args.includes('--browser=chromium'), 'Playwright MCP must select Chromium explicitly');
 const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
 const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');
 for (const requirement of ['AZ-ARCH-1', 'AZ-CON-1', 'AZ-PLAN-1', 'AZ-OWN-1', 'NOT CHECKED', '--read-only', '--tool', 'hooks', 'Copilot CLI does not read', 'separate', 'NOT RUN']) {
