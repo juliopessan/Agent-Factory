@@ -14,7 +14,7 @@ Users: Factory operators using VS Code and Copilot CLI. Outcome: resumable, insp
 | Repository publication | Commit the five extension-owned files and push main to origin at https://github.com/juliopessan/Copilot-Agent-Factory.git; exclude all pre-existing changes and runtime state | User: "pode seguir com nexts steps e gitpush e commit no repo", 2026-10-22; exact time unavailable | AUTHORIZED; Git history/remote identify publication outcome |
 | Destructive, paid or deployment actions | Force push, provisioning, deployment, migrations, paid model calls | None | NOT AUTHORIZED |
 | Later extensions | Hooks, reviewed learning, recursion, increased parallelism | None | NOT AUTHORIZED |
-| Phase 2 Factory as Code and Run Ledger | FAC-ARCH-1, FAC-CON-1, FAC-CON-2, FAC-PLAN-1, FAC-OWN-1 in [Phase 2 specification](../factory-extensions/PHASE2_SPEC.md); planning record only | None; awaits Phase 1 disposition or recorded waiver | PROPOSED |
+| Phase 2 Factory as Code and Run Ledger | FAC-ARCH-1, FAC-CON-1, FAC-CON-2, FAC-PLAN-1, FAC-OWN-1 in [Phase 2 specification](../factory-extensions/PHASE2_SPEC.md); planning record only | User: "aprovado JSON na raiz, dispensa a Phase 1, pode implementar", 2026-10-28; exact time unavailable. Resolves open decisions: `factory.json` at the Factory root; Phase 1 acceptance waived for Phase 2 (EXT-003 status itself unchanged) | APPROVED |
 
 ## EXT-PLAN-1 And EXT-OWN-1
 
@@ -134,6 +134,20 @@ Security report AZ-004: separate-context review assessed supplied code excerpts 
 | AZ004-003 | Verification evidence blocker / INTRODUCED | OPEN | QA must run the final current suite on an authorized runner with symbolic-link capability and preserve raw output. CI runner behavior and full final-candidate evidence remain unobserved. |
 
 No human residual-risk acceptance is recorded. The implementation is present but overall acceptance remains BLOCKED, not DONE, production-ready or Azure-enabled. Preserve all prior EXT/REV statuses. Next authorized handoff: complete final QA and Deep review, then request installation/configuration/authentication and per-client DEV pilot approvals separately.
+
+## Phase 2 Factory As Code And Run Ledger
+
+Scope, contracts and plan: [Phase 2 specification](../factory-extensions/PHASE2_SPEC.md). Approval is recorded in the register above. This session ran sequentially with one coordinating assistant: QA, Security and Docs work was not dispatched to separate specialists, so no independent review is claimed.
+
+| Task | Owner | Exclusive write set | Contract | State |
+| --- | --- | --- | --- | --- |
+| FAC-001 | Chief of Staff | factory.json; scripts/Invoke-FactoryManifest.ps1; PHASE2_SPEC.md; this section and the register row; CI step; structural validator assertions | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: AWAITING HOSTED CI |
+| FAC-002 | QA Engineer (performed by coordinator, not independent) | tests/factory-manifest.tests.ps1 only | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: AWAITING HOSTED CI |
+| FAC-003 | Security Reviewer | NONE; read-only | FAC-ARCH-1 | NOT RUN: independent Deep review outstanding |
+| FAC-004 | Documentation Engineer (performed by coordinator) | OVERVIEW Phase 2 section; README entry point | FAC-PLAN-1 | IMPLEMENTED |
+| FAC-PILOT | Human operator | Disposable project only | FAC-PLAN-1 step 8 | NOT RUN |
+
+Evidence: `npm run test:structure` passes locally against the shipped manifest. PowerShell was unavailable in the authoring session and its installation was declined there, so the PowerShell suite did NOT RUN locally; Factory CI (`windows-latest`, pwsh) is the first execution. Not DONE until hosted CI passes, the independent Security review completes and a pilot is observed or explicitly waived.
 
 ## Next Steps
 

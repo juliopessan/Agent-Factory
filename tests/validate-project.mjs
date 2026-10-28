@@ -125,10 +125,15 @@ for (const requirement of [
 ]) assert(sdlcReview.includes(requirement), `Missing software factory reference contract: ${requirement}`);
 const phase2 = readFileSync(join(root, 'docs/factory-extensions/PHASE2_SPEC.md'), 'utf8');
 for (const requirement of [
-  'PROPOSED, NOT APPROVED', 'FAC-ARCH-1', 'FAC-CON-1', 'FAC-CON-2', 'FAC-PLAN-1', 'FAC-OWN-1',
+  'APPROVED FOR IMPLEMENTATION', 'FAC-ARCH-1', 'FAC-CON-1', 'FAC-CON-2', 'FAC-PLAN-1', 'FAC-OWN-1',
   'Agents cannot approve', 'Gates are invariants', 'No new package', 'No `run` command in Phase 2',
 ]) assert(phase2.includes(requirement), `Missing Phase 2 proposal contract: ${requirement}`);
-assert(!existsSync(join(root, 'factory.json')) && !existsSync(join(root, 'scripts/Invoke-FactoryManifest.ps1')), 'Phase 2 implementation files require recorded FAC approval');
+const factoryManifest = JSON.parse(readFileSync(join(root, 'factory.json'), 'utf8'));
+const manifestProfiles = [factoryManifest.agents.coordinator, factoryManifest.agents.architect, ...factoryManifest.agents.implementation, ...factoryManifest.agents.verification];
+const kitProfiles = readdirSync(join(root, '.github/agents')).filter(name => name.endsWith('.agent.md')).map(name => `.github/agents/${name}`);
+assert.deepEqual([...manifestProfiles].sort(), [...kitProfiles].sort(), 'factory.json must reference every agent profile exactly once');
+for (const reference of [...manifestProfiles, ...Object.values(factoryManifest.contracts)]) assert(existsSync(join(root, reference)), `factory.json: missing reference ${reference}`);
+for (const flag of [...Object.values(factoryManifest.verification), ...Object.values(factoryManifest.delivery)]) assert.equal(flag, true, 'factory.json gate invariants cannot be weakened');
 assert(readFileSync(join(root, 'docs/factory/TASK_BOARD.md'), 'utf8').includes('| Phase 2 Factory as Code and Run Ledger |'), 'Task board must register the Phase 2 proposal');
 const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
 const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');
@@ -142,5 +147,6 @@ for (const entry of ['prompts/BOOTSTRAP.md', '.github/agents/chief-of-staff.agen
 }
 assert(azureChecker.includes('-CommandType Application') && azureChecker.includes('LOCAL_CHECKS_COMPLETE'), 'Azure checker must expose offline discovery semantics');
 const factoryCi = parseDocument(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8')).toJS();
+assert(factoryCi.jobs.validate.steps.some(step => step.run === './tests/factory-manifest.tests.ps1'), 'Factory CI must execute the Phase 2 manifest suite');
 assert(factoryCi.jobs.validate.steps.some(step => step.run === './tests/azure-integration.tests.ps1'), 'Factory CI must execute the offline Azure suite');
 console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding, review policy and optional Azure wiring, Markdown tables/fences, and ${localLinks} local links. Conversational behavior, live review enforcement and Azure activation were not evaluated.`);

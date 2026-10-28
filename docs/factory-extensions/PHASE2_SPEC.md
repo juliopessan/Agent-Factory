@@ -1,6 +1,6 @@
 # Phase 2 Specification: Factory As Code And Run Ledger
 
-This record proposes Phase 2 for human review. It authorizes nothing: no implementation, installation, execution, publication, or change to the Phase 1 companion. Status: **PROPOSED, NOT APPROVED**.
+This record specifies Phase 2. It authorizes implementing the in-scope items below on the working branch only: no installation, agent dispatch, execution, deployment, or change to the Phase 1 companion. Status: **APPROVED FOR IMPLEMENTATION**. Approval: user message "aprovado JSON na raiz, dispensa a Phase 1, pode implementar", 2026-10-28 (exact time unavailable); it selects `factory.json` at the Factory root and waives Phase 1 acceptance for Phase 2. Implementation does not authorize execution, publication beyond this branch, or any later phase.
 
 Owner: Chief of Staff | Revision: FAC-SPEC-1 draft | Updated: 2026-10-28 | Proposed versions: FAC-ARCH-1, FAC-CON-1, FAC-CON-2, FAC-PLAN-1, FAC-OWN-1
 
@@ -8,7 +8,7 @@ Owner: Chief of Staff | Revision: FAC-SPEC-1 draft | Updated: 2026-10-28 | Propo
 
 ## Entry Conditions
 
-The [task board](../factory/TASK_BOARD.md) requires human disposition of Phase 1 baseline deviations and pilot acceptance before Phase 2 is proposed for approval. Those remain open: EXT-003 is INCOMPLETE: ACCEPTANCE and "Later extensions" is NOT AUTHORIZED. This draft may be reviewed now, but approval of FAC versions should wait for, or explicitly waive with a recorded reference, that Phase 1 disposition.
+The [task board](../factory/TASK_BOARD.md) requires human disposition of Phase 1 baseline deviations and pilot acceptance before Phase 2 is proposed for approval. Those remain open: EXT-003 is INCOMPLETE: ACCEPTANCE and "Later extensions" is NOT AUTHORIZED. The user explicitly waived that prerequisite for Phase 2 on 2026-10-28. The waiver does not change EXT-003, which remains INCOMPLETE: ACCEPTANCE.
 
 ## Goal And Non-Goals
 
