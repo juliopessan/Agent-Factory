@@ -14,6 +14,7 @@ Users: Factory operators using VS Code and Copilot CLI. Outcome: resumable, insp
 | Repository publication | Commit the five extension-owned files and push main to origin at https://github.com/juliopessan/Copilot-Agent-Factory.git; exclude all pre-existing changes and runtime state | User: "pode seguir com nexts steps e gitpush e commit no repo", 2026-10-22; exact time unavailable | AUTHORIZED; Git history/remote identify publication outcome |
 | Destructive, paid or deployment actions | Force push, provisioning, deployment, migrations, paid model calls | None | NOT AUTHORIZED |
 | Later extensions | Hooks, reviewed learning, recursion, increased parallelism | None | NOT AUTHORIZED |
+| Phase 2 Factory as Code and Run Ledger | FAC-ARCH-1, FAC-CON-1, FAC-CON-2, FAC-PLAN-1, FAC-OWN-1 in [Phase 2 specification](../factory-extensions/PHASE2_SPEC.md); planning record only | None; awaits Phase 1 disposition or recorded waiver | PROPOSED |
 
 ## EXT-PLAN-1 And EXT-OWN-1
 

@@ -123,6 +123,13 @@ for (const requirement of [
   '## Software Factory Reference', 'Factory as code', 'Measure before routing', 'Improvement stays reviewed',
   'never self-modifies its governance', 'within approved Microsoft services', 'Two human roles',
 ]) assert(sdlcReview.includes(requirement), `Missing software factory reference contract: ${requirement}`);
+const phase2 = readFileSync(join(root, 'docs/factory-extensions/PHASE2_SPEC.md'), 'utf8');
+for (const requirement of [
+  'PROPOSED, NOT APPROVED', 'FAC-ARCH-1', 'FAC-CON-1', 'FAC-CON-2', 'FAC-PLAN-1', 'FAC-OWN-1',
+  'Agents cannot approve', 'Gates are invariants', 'No new package', 'No `run` command in Phase 2',
+]) assert(phase2.includes(requirement), `Missing Phase 2 proposal contract: ${requirement}`);
+assert(!existsSync(join(root, 'factory.json')) && !existsSync(join(root, 'scripts/Invoke-FactoryManifest.ps1')), 'Phase 2 implementation files require recorded FAC approval');
+assert(readFileSync(join(root, 'docs/factory/TASK_BOARD.md'), 'utf8').includes('| Phase 2 Factory as Code and Run Ledger |'), 'Task board must register the Phase 2 proposal');
 const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
 const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');
 for (const requirement of ['AZ-ARCH-1', 'AZ-CON-1', 'AZ-PLAN-1', 'AZ-OWN-1', 'NOT CHECKED', '--read-only', '--tool', 'hooks', 'Copilot CLI does not read', 'separate', 'NOT RUN']) {
