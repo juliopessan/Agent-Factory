@@ -135,6 +135,11 @@ assert.deepEqual([...manifestProfiles].sort(), [...kitProfiles].sort(), 'factory
 for (const reference of [...manifestProfiles, ...Object.values(factoryManifest.contracts)]) assert(existsSync(join(root, reference)), `factory.json: missing reference ${reference}`);
 for (const flag of [...Object.values(factoryManifest.verification), ...Object.values(factoryManifest.delivery)]) assert.equal(flag, true, 'factory.json gate invariants cannot be weakened');
 assert(readFileSync(join(root, 'docs/factory/TASK_BOARD.md'), 'utf8').includes('| Phase 2 Factory as Code and Run Ledger |'), 'Task board must register the Phase 2 proposal');
+const qaProfile = readFileSync(join(root, '.github/agents/qa.agent.md'), 'utf8');
+const playwrightMcp = JSON.parse(readFileSync(join(root, '.vscode/mcp.json'), 'utf8')).servers.playwright;
+assert(qaProfile.includes("'playwright/*'") && qaProfile.includes('QA_BROWSER_AUTOMATION.md') && qaProfile.includes('mark browser checks NOT RUN'), 'QA profile must expose bounded Playwright verification');
+assert(playwrightMcp.args.some(arg => /^@playwright\/mcp@\d+\.\d+\.\d+$/.test(arg)) && !playwrightMcp.args.some(arg => arg.includes('@latest')), 'Playwright MCP must be pinned to an exact version');
+assert(playwrightMcp.args.includes('--isolated'), 'Playwright MCP must use an isolated browser profile');
 const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
 const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');
 for (const requirement of ['AZ-ARCH-1', 'AZ-CON-1', 'AZ-PLAN-1', 'AZ-OWN-1', 'NOT CHECKED', '--read-only', '--tool', 'hooks', 'Copilot CLI does not read', 'separate', 'NOT RUN']) {
