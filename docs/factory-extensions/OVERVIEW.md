@@ -120,6 +120,21 @@ Approved scope and contracts: [Phase 2 specification](PHASE2_SPEC.md) (FAC-ARCH-
 
 Limits: the ledger proves what was recorded, not that it happened. Writers can still record false `reported` data; only `observed` entries with evidence files and human references carry stronger provenance. Path and link checks are defensive local checks, not a sandbox.
 
+## Factory Console
+
+[tools/factory-console.html](../../tools/factory-console.html) is a single offline page for people who prefer a browser to JSON. Open it directly from disk; it needs no server, install, or network, and its Content Security Policy blocks every request.
+
+| Tab | What It Does | Boundary |
+| --- | --- | --- |
+| Overview | Loads `factory.json` and shows stages with their human gates, agents, contracts, and gate invariants | Mirrors the FAC-CON-1 structure checks; file existence is checked only by `Validate` |
+| Configure | Edits manifest name and version and generates the Playwright MCP configuration (Chromium or Edge, headless, vision, optional origins) | Gate invariants are locked and always written as `true`; output is downloaded or copied for a reviewed pull request |
+| Runs | Displays a saved `Report` (JSON): summary cards, outcome per run, violations, observed versus reported checks, stage timeline, human-review wait, cost | Shows only what `Report` derived; unknown values stay NOT OBSERVED |
+| Commands | Builds `Validate`, `Plan`, `Record`, and `Report` commands with safe PowerShell quoting | Copy only; the page never runs anything |
+
+Save a report for the Runs tab with `./scripts/Invoke-FactoryManifest.ps1 -Action Report -ProjectRoot <project> | ConvertTo-Json -Depth 10 | Set-Content -Encoding utf8 report.json`.
+
+The structural validator executes the console's core logic against the shipped `factory.json` and `.vscode/mcp.json` on every CI run, so the page cannot drift from the real contracts unnoticed. It renders all data as text and has no external code. It is original code; no Warp source (AGPL v3) is used. The look follows the Ledger Design System v2: its CSS, runtime script and icon sprite are inlined, and its web fonts are not loaded because the page is offline, so the declared Arial and Menlo fallbacks render. Incomplete reports are rejected instead of shown as zero, and loading a new manifest clears any previous export.
+
 ## Next Steps
 
 1. Run the standalone checks and inspect the integrated local handoff flow.
