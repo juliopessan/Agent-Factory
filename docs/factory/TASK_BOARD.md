@@ -142,13 +142,13 @@ Scope, contracts and plan: [Phase 2 specification](../factory-extensions/PHASE2_
 
 | Task | Owner | Exclusive write set | Contract | State |
 | --- | --- | --- | --- | --- |
-| FAC-001 | Chief of Staff | factory.json; scripts/Invoke-FactoryManifest.ps1; PHASE2_SPEC.md; this section and the register row; CI step; structural validator assertions | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: AWAITING HOSTED CI |
-| FAC-002 | QA Engineer (performed by coordinator, not independent) | tests/factory-manifest.tests.ps1 only | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: AWAITING HOSTED CI |
+| FAC-001 | Chief of Staff | factory.json; scripts/Invoke-FactoryManifest.ps1; PHASE2_SPEC.md; this section and the register row; CI step; structural validator assertions | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: HOSTED CI PASS |
+| FAC-002 | QA Engineer (performed by coordinator, not independent) | tests/factory-manifest.tests.ps1 only | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: HOSTED CI PASS |
 | FAC-003 | Security Reviewer | NONE; read-only | FAC-ARCH-1 | NOT RUN: independent Deep review outstanding |
 | FAC-004 | Documentation Engineer (performed by coordinator) | OVERVIEW Phase 2 section; README entry point | FAC-PLAN-1 | IMPLEMENTED |
 | FAC-PILOT | Human operator | Disposable project only | FAC-PLAN-1 step 8 | NOT RUN |
 
-Evidence: `npm run test:structure` passes locally against the shipped manifest. PowerShell was unavailable in the authoring session and its installation was declined there, so the PowerShell suite did NOT RUN locally; Factory CI (`windows-latest`, pwsh) is the first execution. Not DONE until hosted CI passes, the independent Security review completes and a pilot is observed or explicitly waived.
+Evidence: `npm run test:structure` passes locally against the shipped manifest. PowerShell was unavailable in the authoring session and its installation was declined there, so the PowerShell suite did NOT RUN locally; Factory CI (`windows-latest`, pwsh) is the first execution. Hosted evidence: Factory CI run 40672030034 passed on candidate 993bbda (first execution of the Phase 2 suite), and run 40682578450 passed on c1d23a8, the head merged to main in ea37249. Not DONE until the independent Security review completes and a pilot is observed or explicitly waived.
 
 ## Factory Console UI-1
 
@@ -156,10 +156,10 @@ Scope: single offline HTML page, recorded in the approval register above. The co
 
 | Task | Owner | Exclusive write set | State |
 | --- | --- | --- | --- |
-| UI-001 | Chief of Staff | tools/factory-console.html; OVERVIEW Factory Console section; README entry; this section and register row; structural validator console checks | IMPLEMENTED: AWAITING HOSTED CI |
+| UI-001 | Chief of Staff | tools/factory-console.html; OVERVIEW Factory Console section; README entry; this section and register row; structural validator console checks | IMPLEMENTED: HOSTED CI PASS |
 | UI-002 | Security Reviewer | NONE; read-only | NOT RUN: independent review outstanding |
 
-Evidence: `npm run test:structure` passes locally and executes the console core against the shipped manifest and MCP configuration. Headless Chromium (preinstalled 1194 build) loaded a synthetic copy of the page with the real manifest and a synthetic report: zero JavaScript errors, all four tabs rendered, and no horizontal overflow at the 500 px minimum viewport (485 px content). Screenshots are session-local evidence only. No user pilot has been observed. Copilot review on PR 2 raised five findings (smart-apostrophe quoting, dark-mode button contrast, backslash contract paths, incomplete reports shown as zero, stale exports after reload); all were verified and fixed, with validator regressions for the logic fixes and a Chromium behavior check for stale exports and incomplete reports. The page was restyled with the Ledger Design System v2 at the user's request.
+Evidence: `npm run test:structure` passes locally and executes the console core against the shipped manifest and MCP configuration. Headless Chromium (preinstalled 1194 build) loaded a synthetic copy of the page with the real manifest and a synthetic report: zero JavaScript errors, all four tabs rendered, and no horizontal overflow at the 500 px minimum viewport (485 px content). Screenshots are session-local evidence only. No user pilot has been observed. Copilot review on PR 2 raised five findings (smart-apostrophe quoting, dark-mode button contrast, backslash contract paths, incomplete reports shown as zero, stale exports after reload); all were verified and fixed, with validator regressions for the logic fixes and a Chromium behavior check for stale exports and incomplete reports. The page was restyled with the Ledger Design System v2 at the user's request. Hosted evidence: Factory CI run 40687426601 passed on candidate be63373, the head merged to main in 91aa013.
 
 ## Next Steps
 

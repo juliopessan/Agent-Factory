@@ -195,7 +195,7 @@ These additions make the Factory's structure and runs inspectable as data. They 
 
 Open `tools/factory-console.html` in a browser, load `factory.json` or the saved `report.json`, and review any generated file in a pull request. The console is styled with the Ledger Design System; its web fonts are not loaded because the page is offline.
 
-**Implementation status: local kit checks and Factory CI pass; acceptance pending.** The independent Security reviews of the run ledger (FAC-003) and the console (UI-002), the Phase 2 pilot, and starting the Playwright server in each client remain NOT RUN. The ledger records what was written, not proof that it happened; only `observed` entries with evidence files and `human` entries with references carry stronger provenance.
+**Implementation status: implemented; acceptance pending.** Factory CI passed on the merged candidates (Phase 2 at `c1d23a8`, the console at `be63373`); the PowerShell suites were not run in the authoring session, and hosted CI is their only execution evidence. See the [task board](docs/factory/TASK_BOARD.md) for run references. The independent Security reviews of the run ledger (FAC-003) and the console (UI-002), the Phase 2 pilot, and starting the Playwright server in each client remain NOT RUN. The ledger records what was written, not proof that it happened; only `observed` entries with evidence files and `human` entries with references carry stronger provenance.
 
 ## Repository Contents
 
