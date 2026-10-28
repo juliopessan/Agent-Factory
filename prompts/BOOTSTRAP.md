@@ -19,6 +19,12 @@ Run this conversation before the planning workflow below. It is a conversational
 
 For an experienced user or a supplied completed brief, offer a fast path: reuse the supplied answers and present one concise setup summary for confirmation. Do not skip folder checks, material open decisions, capability limitations, or approval gates. The user may pause or request a handoff summary at any time.
 
+## Optional Azure Capability Check
+
+For an Azure-related project, use the [optional Azure integration guide](../docs/AZURE_INTEGRATION.md). Discover actual official Azure Skills and MCP tools exposed by the selected client before recommending them. An installed file, executable, or valid configuration is not proof of loading, authentication, RBAC, or a successful tool call. If authorized to run local diagnostics, use the offline prerequisite checker; it never installs, authenticates, starts MCP or queries Azure. Do not scan personal configuration or credential caches automatically.
+
+Keep unavailable capabilities NOT CHECKED or BLOCKED for the affected task; ordinary Factory planning and non-Azure work remain available. Installation, plugin hooks, configuration activation and a scoped DEV pilot need separate authorization. Review actual versions, all MCP sources and effective tool restrictions; read-only can still expose sensitive data or incur costs. Official skill instructions do not grant Factory authority. Use azure-prepare only for explicitly selected azd or an existing azure.yaml; other workflows use the appropriate official skill. Preserve all implementation and release gates below.
+
 ## Planning Workflow
 
 Enter only after READY FOR PLANNING. Completing onboarding is not implementation approval. For EXPLORE ONLY or BLOCKED, do not execute the steps below.

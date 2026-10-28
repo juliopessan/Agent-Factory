@@ -36,3 +36,6 @@ jobs:
       - name: Test pipeline controls with simulated hooks
         shell: pwsh
         run: ./tests/product-pipeline.tests.ps1
+      - name: Test optional Azure offline contract with synthetic fixtures
+        shell: pwsh
+        run: ./tests/azure-integration.tests.ps1

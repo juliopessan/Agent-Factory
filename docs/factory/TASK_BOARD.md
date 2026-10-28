@@ -86,6 +86,54 @@ Bounded design/plan REV-1: retain the existing Factory architecture, roles, dire
 | REV-002: policy wiring and regression checks | PASS: LOCAL KIT | npm run test:structure: exit 0, 105 local links; pwsh -NoProfile -File ./tests/setup-local.tests.ps1: exit 0; pwsh -NoProfile -File ./tests/product-pipeline.tests.ps1: exit 0, simulated controls only; pwsh -NoProfile -File ./tests/factory-extension.tests.ps1: exit 0, 77 passed / 0 failed / 0 skipped, synthetic fixtures only. Run from kit root on 2026-10-23; editor diagnostics clear for changed validator/commander. |
 | REV-003: live reviewer adherence and quality | NOT RUN | No independent review, client pilot, paid evaluation, or technical PR gate is claimed. |
 
+## Azure Integration AZ-1
+
+Scope: optional offline kit support for VS Code and Copilot CLI. Architecture AZ-ARCH-1, contract AZ-CON-1, implementation plan AZ-PLAN-1, ownership AZ-OWN-1 are approved by the user message "Start implementation", 2026-10-26, following the named proposal in chat; exact time unavailable. This authorizes the bounded kit changes only, not installation, authentication, live Azure calls, commits, pushes, provisioning or deployment. Review tier: Deep, because external-tool guidance and CI are affected. Existing EXT/REV acceptance and deviations remain unchanged.
+
+Design: reuse official Azure Skills and client-native Azure MCP configuration; no copied upstream skills, active MCP config, new tool aliases, agent tool-list changes or automatic installation. The optional PowerShell 7.2+ checker is read-only and offline. It accepts Client (VSCode, CopilotCLI, Both), ProjectRoot, optional explicit McpConfigPath, and AsJson. It reports VERIFIED/MISSING/NOT CHECKED observations, never deployment readiness. Required npm-route executables: node, npx, git, az and selected client; azd is conditional. Executable discovery is not version, authentication, RBAC, skill loading or successful tool invocation. JSON inspection is bounded, rejects duplicate keys and links, and never executes or echoes configuration values. Exit 0 means local checks complete; exit 1 means a missing prerequisite or invalid input. Live-only unknowns remain NOT CHECKED.
+
+| Task | Exclusive Owner | Write Set | Dependency | State |
+| --- | --- | --- | --- | --- |
+| AZ-001 | Chief of Staff | scripts/Test-FactoryAzurePrerequisites.ps1; README.md; prompts/BOOTSTRAP.md; .github/agents/chief-of-staff.agent.md; .github/agents/integrations.agent.md; tests/validate-project.mjs; .github/workflows/ci.yml; this AZ section | Approved AZ-1 versions | IMPLEMENTED; ACCEPTANCE BLOCKED |
+| AZ-002 | QA Engineer | tests/azure-integration.tests.ps1 only | Published AZ-CON-1 checker interface | REPORTED; FULL EXECUTION BLOCKED |
+| AZ-003 | Documentation Engineer | docs/AZURE_INTEGRATION.md only | AZ-CON-1 in this section | REPORTED; STRUCTURE VERIFIED |
+| AZ-004 | Security Reviewer | NONE; read-only report as text | Integrated candidate and checks | LIMITED EXCERPT REVIEW; INCOMPLETE |
+
+Dispatch boundaries: no nested delegation, package installs, network/cloud access, personal configuration edits or Git mutation. QA may execute the checker and its assigned tests with isolated temporary fixtures and local doubles, using PowerShell; never read real credential caches. Docs may read relevant kit files and the official-source references provided in the assignment; no terminal execution required. Security is read-only and requests executable checks from the commander. All specialists return AGENT_REPORT fields as text for Chief of Staff to persist here. Stop affected tasks on ownership or contract mismatch. Chief of Staff alone integrates shared files and records actual evidence.
+
+Acceptance: optional behavior; unchanged installer and existing gates; focused offline negative tests and genuine local checker smoke; existing structural/installer/pipeline/companion regressions; separate-context Deep review with no unresolved blockers. Client pilots and Azure access remain NOT RUN until separately authorized. No live mutation attempt is part of the read-only pilot. Unknown runtime versions and unobservable installation sources require manual verification, not invented evidence.
+
+### AZ-1 Execution Evidence And Handoff
+
+Publication authorization: user request "Git push, commit e update readme", 2026-10-26, authorizes the README status update, a commit of the ten AZ-1 files listed above, and a normal non-force push of main to the configured origin, https://github.com/juliopessan/Copilot-Agent-Factory.git. Exclude all pre-existing untracked directories and unrelated changes. This publishes an implementation snapshot with disclosed blockers; it does not waive acceptance, security review, client-pilot or deployment gates. Git history and remote verification establish the publication outcome. Stop on rejected/diverged history rather than force pushing.
+
+Candidate: uncommitted worktree implementing the ten-file AZ-1 write set on 2026-10-26; no commit identity invented. Existing untracked `%SystemDrive%/`, `.claude-flow/`, `.github/skills/` and `.vscode/` were excluded from edits and publication. No installation, authentication, live cloud access, commit, push or release was performed. Commander performed central implementation and reruns; specialists did not execute commands. Documentation and QA eventually created only their assigned files after initial tool-capability handoffs. Named tools/profile availability alone was not treated as successful delegation execution.
+
+| Check | Command / Observed Result | Limit |
+| --- | --- | --- |
+| Checker parser / editor | PowerShell ParseFile and editor diagnostics: no errors | Syntax only |
+| Azure contract suite | pwsh -NoProfile -File ./tests/azure-integration.tests.ps1: 85 PASS, 0 FAIL, 4 NOT RUN, 89 total; strict incomplete-evidence exit remains nonzero | Synthetic application/configuration fixtures; symbolic links could not be created; three junction cases passed |
+| Final QA path change | Parser and exact default script path check: exit 0 | Removed recursive checker discovery; full final suite NOT RUN due the same privilege blocker |
+| Structure and routing | npm run test:structure: exit 0, 109 local links | Behavioral adherence and Azure activation not evaluated |
+| Installer PS7 | pwsh -NoProfile -File ./tests/setup-local.tests.ps1: exit 0 | Isolated installation fixtures only |
+| Installer Windows PS5.1 | powershell -NoProfile -File ./tests/setup-local.tests.ps1: exit 0 | Existing compatibility contract only |
+| Pipeline controls | pwsh -NoProfile -File ./tests/product-pipeline.tests.ps1: exit 0 | Simulated hooks, no product or hosted execution |
+| Companion regression | pwsh -NoProfile -File ./tests/factory-extension.tests.ps1: 72 passed, 5 failed, exit 1 | Existing source/root/board/checkpoint/sessions symbolic-link fixtures require administrator privileges in this session; companion files unchanged |
+| Genuine local checker smoke | pwsh -NoProfile -File ./scripts/Test-FactoryAzurePrerequisites.ps1 -Client Both -AsJson: exit 0, LOCAL_CHECKS_COMPLETE | PATH applications found without execution; personal config, versions, skills, auth, RBAC, scopes and live invocation NOT CHECKED |
+| Live client pilots / hosted CI | NOT RUN | Separate authorization and appropriate execution environment required |
+
+The symlink issue is an observed fixture-creation/environment failure, not evidence that containment passed or that the checker/companion failed containment. No elevation, privilege/policy changes, or relaxed gates were attempted. A narrow PATH restoration during QA fixture creation did not resolve it. The strict Azure suite stays wired into CI; runners lacking required link capabilities will not silently pass. Run both suites in an authorized capable environment before acceptance.
+
+Security report AZ-004: separate-context review assessed supplied code excerpts and implementation facts only; the reviewer had no workspace read or execution tools, did not read REVIEW.md independently, and did not inspect the full candidate. It reported no confirmed vulnerability in those excerpts, not worktree clearance. Chief of Staff retains the following dispositions:
+
+| Finding | Severity / Origin | Disposition | Owner And Evidence |
+| --- | --- | --- | --- |
+| AZ004-001 | Medium boundary limitation / INTRODUCED | FIXED_PENDING_VERIFICATION | Docs added the explicit check-then-open TOCTOU warning and trusted-workspace/ACL requirement in the guide; central structure passed. Path checks are not atomic or a sandbox; independent re-review pending. |
+| AZ004-002 | Review evidence blocker / INTRODUCED | OPEN | Chief of Staff must provide the full candidate and REVIEW.md to an execution/read-capable separate reviewer or authorized manual reviewer. Supplied excerpts are insufficient for Deep clearance. |
+| AZ004-003 | Verification evidence blocker / INTRODUCED | OPEN | QA must run the final current suite on an authorized runner with symbolic-link capability and preserve raw output. CI runner behavior and full final-candidate evidence remain unobserved. |
+
+No human residual-risk acceptance is recorded. The implementation is present but overall acceptance remains BLOCKED, not DONE, production-ready or Azure-enabled. Preserve all prior EXT/REV statuses. Next authorized handoff: complete final QA and Deep review, then request installation/configuration/authentication and per-client DEV pilot approvals separately.
+
 ## Next Steps
 
 1. Commit and push only the verified extension files under the recorded action-specific authorization.
