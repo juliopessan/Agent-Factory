@@ -115,7 +115,7 @@ The coordinator reviews reports and actual changed files, checks ownership compl
 
 ### 5. Verify The Actual Result
 
-Run the repository's relevant checks, not just checks suggested by an agent. Depending on the project, these include formatting, linting, type checking, unit/integration/end-to-end tests, dependency and secret scanning, accessibility checks, build validation, and manual review. Require real local execution and an observable smoke flow for the agreed delivery gate. Distinguish test doubles, emulators, and authorized live integrations.
+Run the repository's relevant checks, not just checks suggested by an agent. Depending on the project, these include formatting, linting, type checking, unit/integration/end-to-end tests, dependency and secret scanning, accessibility checks, build validation, and manual review. Require real local execution and an observable smoke flow for the agreed delivery gate. Distinguish test doubles, emulators, and authorized live integrations. Review diffs in a separate context per the [shared review policy](REVIEW.md): the reviewer receives intent, contract, diff, and evidence rather than the author's verdict; findings cite exact file and line with evidence; and after three rounds without convergence automatic iteration stops for a human decision.
 
 ### 6. Leave Evidence For The Next Person
 
@@ -203,6 +203,7 @@ Before activation, complete final QA on an authorized runner with link capabilit
 |-- prompts/
 |   `-- BOOTSTRAP.md
 |-- scripts/
+|   |-- Invoke-FactoryManifest.ps1
 |   `-- Invoke-ProductPipeline.ps1
 |-- templates/
 |   |-- PROJECT_BRIEF.md
@@ -213,6 +214,7 @@ Before activation, complete final QA on an authorized runner with link capabilit
 |   |-- AGENT_REPORT.md
 |   |-- TASK_CONTRACT.md
 |   |-- CHANGE_REQUEST.md
+|   |-- REVIEW.md
 |   |-- TEST_STRATEGY.md
 |   |-- RELEASE_PLAN.md
 |   `-- OPERATIONS_RUNBOOK.md
@@ -221,17 +223,19 @@ Before activation, complete final QA on an authorized runner with link capabilit
 |   |   `-- product-hook.ps1
 |   |-- setup-local.tests.ps1
 |   |-- product-pipeline.tests.ps1
+|   |-- factory-manifest.tests.ps1
 |   `-- validate-project.mjs
 |-- .gitignore
 |-- CLAUDE.md
 |-- REVIEW.md
+|-- factory.json
 |-- package.json
 |-- package-lock.json
 |-- setup-local.ps1
 `-- README.md
 ```
 
-The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, eleven templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration).
+The kit contains eight agents, shared instructions, VS Code and plain cross-client bootstrap prompts, twelve templates, a CLI installer, executable kit checks, and opt-in product CI/CD controls. It does not include a product application, deployment identities, cloud resources, or real product test/deployment hooks. The [SDLC review](docs/SDLC_REVIEW.md) records the attached ZIP comparison, remaining adoption gates, and the [agent execution optimization reference](docs/SDLC_REVIEW.md#agent-execution-optimization-reference) (token optimization, memory persistence, continuous learning, verification loops, parallelization, and subagent orchestration), plus the [agent code review reference](docs/SDLC_REVIEW.md#agent-code-review-reference) and the [software factory reference](docs/SDLC_REVIEW.md#software-factory-reference) (factory stack layers, loop touchpoints, and local-first guardrails). [factory.json](factory.json) declares the Factory as code by referencing the existing agents, contracts, stages and gates; [Phase 2](docs/factory-extensions/OVERVIEW.md#phase-2-factory-as-code-and-run-ledger) validates it and records an immutable, provenance-tagged run ledger without dispatching agents.
 
 - **Agent profiles** define role, scope, tools, and working expectations.
 - **[Repository instructions](.github/copilot-instructions.md)** provide shared conventions and safety rules.
@@ -250,6 +254,7 @@ The kit contains eight agents, shared instructions, VS Code and plain cross-clie
 | [AGENT_REPORT](templates/AGENT_REPORT.md) | Specialist returns, limitations, findings, and final delivery addendum |
 | [TASK_CONTRACT](templates/TASK_CONTRACT.md) | One accountable owner, exact write set, approved versions, dependencies, allowed commands, and acceptance evidence |
 | [CHANGE_REQUEST](templates/CHANGE_REQUEST.md) | Shared-change impact, affected tasks, approval decisions, verification, and resumption |
+| [REVIEW](templates/REVIEW.md) | Project complement to the shared [review policy](REVIEW.md): failure smells, accepted false positives, repeated-finding rules, reviewer regression cases, and review signal quality |
 | [TEST_STRATEGY](templates/TEST_STRATEGY.md) | Automated requirement-to-gate matrix, coverage, security/SLO thresholds, evidence, and human acceptance |
 | [RELEASE_PLAN](templates/RELEASE_PLAN.md) | Immutable candidate, protected DEV/UAT/PROD promotion, approvals, migration and recovery |
 | [OPERATIONS_RUNBOOK](templates/OPERATIONS_RUNBOOK.md) | Service/support ownership, monitoring, incidents, continuity, maintenance, cost, and retirement |
@@ -312,7 +317,7 @@ The installer previews safely with `-WhatIf`, skips identical profiles, and prom
 
 CLI copies use CLI tool names, omit VS Code-only delegation/picker metadata, set `infer: false` for Chief of Staff, and opt into repository custom instructions with `include-custom-instructions: true`. The VS Code `todo` alias has no mapped CLI tool and is omitted; use the task board instead. The named delegate allowlist remains a behavioral requirement in CLI, not an enforced VS Code `agents` field. Verify actual tool availability in the installed CLI version before use.
 
-Repository instructions and all eleven templates still need to be present in each target project. User profiles do not install those records or convert the VS Code bootstrap into a CLI slash command. Start `copilot` from the prepared project, use `/agent` to select **Chief of Staff**, and use the [plain cross-client bootstrap](prompts/BOOTSTRAP.md), or send:
+Repository instructions and all twelve templates still need to be present in each target project. User profiles do not install those records or convert the VS Code bootstrap into a CLI slash command. Start `copilot` from the prepared project, use `/agent` to select **Chief of Staff**, and use the [plain cross-client bootstrap](prompts/BOOTSTRAP.md), or send:
 
 ```text
 Read .github/copilot-instructions.md and templates/PROJECT_BRIEF.md.
@@ -368,6 +373,7 @@ Adopt the factory through existing engineering governance, not around it.
 | Task assignment | Bounded scope, one writer, acceptance criteria, permitted files, validated dependencies | Coordinator and task owner |
 | Security review | Threat-sensitive changes routed through security processes | Engineering and security owners |
 | Verification | Required checks executed with retained results | Implementer, reviewer, and CI owners |
+| Agent code review | Separate-context review, impact-based depth, evidence-backed findings, three-round escalation, repeated findings promoted to rules | Code owners maintain the project review guide; Chief of Staff applies the shared policy |
 | Merge and release | Pull-request, branch protection, approval, and deployment controls | Authorized approvers and release process |
 | Operational feedback | Defects, rework, blockers, and review feedback improve templates | Team lead / engineering enablement |
 
@@ -384,7 +390,7 @@ Confirm that the selected Copilot product, settings, access, and data-handling c
 
 ### Human Oversight And Approval Gates
 
-Discovery and planning come first; product implementation begins only after named architecture, contracts, plan, and ownership versions are accepted. Release follows existing controls. Silence is not approval. Material changes to scope, contracts, architecture, ownership, platform selection, or accepted risk reopen the affected gate.
+Discovery and planning come first; product implementation begins only after named architecture, contracts, plan, and ownership versions are accepted. Release follows existing controls. Silence is not approval. An agent review or approval is evidence, never a human review, merge approval, or release decision; review depth never waives human approval. Material changes to scope, contracts, architecture, ownership, platform selection, or accepted risk reopen the affected gate.
 
 An agent instruction cannot enforce policy against a user or tool. Use platform permissions and technical controls for enforcement; prompts are one layer of defense in depth.
 
@@ -394,11 +400,12 @@ Evaluate against a baseline rather than assuming more agents mean faster deliver
 
 | Dimension | Example Measures | What To Look For |
 | --- | --- | --- |
-| Flow | Lead time, cycle time, dependency waits | Reduced coordination delays |
+| Flow | Lead time, cycle time, dependency waits, kickoff to first PR, PR to first human review, review to merge | Reduced coordination and human-wait delays |
 | Quality | Escaped defects, rework, change failure rate | Speed without lower quality |
 | Verification | Required-check completion, reproducible evidence | Dependable, inspectable results |
 | Collaboration | Contract changes, overlapping edits, blocked tasks | Less friction through ownership and interfaces |
-| Review effort | Reviewer time, substantive findings, follow-up changes | Effective, manageable human review |
+| Review effort | Reviewer time, substantive findings, follow-up changes, review rounds per task, finding dispositions (verified fixed, rejected with evidence, risk accepted) | Effective review with low noise |
+| Model and harness fit | Correctness and cost per task type on the team's own representative tasks | Evidence-based model or effort choices within approved services |
 | Adoption | Active teams, repeat usage, accepted template changes | Sustainable practical value |
 
 Interpret results in context. Complexity, team experience, repository maturity, model choice, and client capabilities affect outcomes. Avoid raw lines of code or agent count as proxies for business value.
@@ -451,7 +458,7 @@ A task is not complete merely because an agent says it is finished. Confirm that
 - Security findings are resolved or explicitly accepted through the proper process; no blocking finding remains unresolved.
 - Documentation and configuration match verified behavior.
 - Limitations, unverified items, and residual risks are disclosed.
-- A human has reviewed changes according to repository policy.
+- A human has reviewed changes according to repository policy; agent review does not count as that approval.
 - Merge and release follow approved controls and separate action-specific authorization.
 
 ## A Final Thought

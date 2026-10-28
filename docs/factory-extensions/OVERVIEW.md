@@ -102,6 +102,24 @@ Run `./tests/factory-extension.tests.ps1`, `npm run test:structure`, `./tests/se
 
 Executed outcomes, candidate hashes and remaining acceptance gaps are recorded in [validation evidence](../factory/extensions/VALIDATION.md).
 
+## Phase 2: Factory As Code And Run Ledger
+
+Approved scope and contracts: [Phase 2 specification](PHASE2_SPEC.md) (FAC-ARCH-1, FAC-CON-1, FAC-CON-2, FAC-PLAN-1, FAC-OWN-1). Phase 1 files and schema are unchanged. Same runtime: PowerShell 7.2+ built-ins, no new package, no model call, no network call, no agent dispatch.
+
+```powershell
+./scripts/Invoke-FactoryManifest.ps1 -Action Validate -ProjectRoot .
+./scripts/Invoke-FactoryManifest.ps1 -Action Plan -ProjectRoot .
+./scripts/Invoke-FactoryManifest.ps1 -Action Record -ProjectRoot C:/Projects/MyApp -InputPath C:/Handoffs/event.json
+./scripts/Invoke-FactoryManifest.ps1 -Action Report -ProjectRoot C:/Projects/MyApp -RunId RUN-001
+```
+
+- **Validate** checks `factory.json` against the closed FAC-CON-1 schema: every referenced agent profile and contract exists, stages and gates are complete and ordered, and no gate invariant is weakened. Read-only.
+- **Plan** prints the manifest's stages, gates and agents with board-recorded gate references (`MISSING` when none) and quoted task-board rows. Read-only; it never marks work READY or APPROVED.
+- **Record** writes one immutable event to `docs/factory/extensions/ledger/<runId>/<sequence>.json` after FAC-CON-2 checks: contiguous sequence, human-only approvals, evidence for observed PASS/FAIL, real commit format or null, non-decreasing timestamps, and gated transitions. Supports `-WhatIf`.
+- **Report** derives each run's outcome, observed/reported/human check counts, stage timestamps, human-review wait, acceptance and cost. Cost per accepted run appears only when every run's cost is known.
+
+Limits: the ledger proves what was recorded, not that it happened. Writers can still record false `reported` data; only `observed` entries with evidence files and human references carry stronger provenance. Path and link checks are defensive local checks, not a sandbox.
+
 ## Next Steps
 
 1. Run the standalone checks and inspect the integrated local handoff flow.

@@ -109,6 +109,38 @@ assert(commander.includes('[REVIEW.md](../../REVIEW.md)') && commander.includes(
 for (const requirement of ['Risk tier and rationale', 'Reviewer and independence', 'Round and prior review reference', 'NOT OBSERVED', 'human reference for risk acceptance']) {
   assert(reviewReport.includes(requirement), `Missing review report field: ${requirement}`);
 }
+const projectReview = readFileSync(join(root, 'templates/REVIEW.md'), 'utf8');
+assert(projectReview.includes('(../REVIEW.md)') && projectReview.includes('never overrides it'), 'Project review guide must defer to the shared policy');
+for (const requirement of [
+  'What Failure Looks Like Here', 'Do Not Flag', 'Repeated Findings Become Rules', 'Reviewer Regression Cases',
+  'An agent review is evidence, never approval', 'NOT OBSERVED',
+]) assert(projectReview.includes(requirement), `Missing project review guide contract: ${requirement}`);
+for (const entry of ['.github/copilot-instructions.md', '.github/agents/chief-of-staff.agent.md']) {
+  assert(readFileSync(join(root, entry), 'utf8').includes('templates/REVIEW.md'), `${entry}: missing project review guide`);
+}
+const sdlcReview = readFileSync(join(root, 'docs/SDLC_REVIEW.md'), 'utf8');
+for (const requirement of [
+  '## Software Factory Reference', 'Factory as code', 'Measure before routing', 'Improvement stays reviewed',
+  'never self-modifies its governance', 'within approved Microsoft services', 'Two human roles',
+]) assert(sdlcReview.includes(requirement), `Missing software factory reference contract: ${requirement}`);
+const phase2 = readFileSync(join(root, 'docs/factory-extensions/PHASE2_SPEC.md'), 'utf8');
+for (const requirement of [
+  'APPROVED FOR IMPLEMENTATION', 'FAC-ARCH-1', 'FAC-CON-1', 'FAC-CON-2', 'FAC-PLAN-1', 'FAC-OWN-1',
+  'Agents cannot approve', 'Gates are invariants', 'No new package', 'No `run` command in Phase 2',
+]) assert(phase2.includes(requirement), `Missing Phase 2 proposal contract: ${requirement}`);
+const factoryManifest = JSON.parse(readFileSync(join(root, 'factory.json'), 'utf8'));
+const manifestProfiles = [factoryManifest.agents.coordinator, factoryManifest.agents.architect, ...factoryManifest.agents.implementation, ...factoryManifest.agents.verification];
+const kitProfiles = readdirSync(join(root, '.github/agents')).filter(name => name.endsWith('.agent.md')).map(name => `.github/agents/${name}`);
+assert.deepEqual([...manifestProfiles].sort(), [...kitProfiles].sort(), 'factory.json must reference every agent profile exactly once');
+for (const reference of [...manifestProfiles, ...Object.values(factoryManifest.contracts)]) assert(existsSync(join(root, reference)), `factory.json: missing reference ${reference}`);
+for (const flag of [...Object.values(factoryManifest.verification), ...Object.values(factoryManifest.delivery)]) assert.equal(flag, true, 'factory.json gate invariants cannot be weakened');
+assert(readFileSync(join(root, 'docs/factory/TASK_BOARD.md'), 'utf8').includes('| Phase 2 Factory as Code and Run Ledger |'), 'Task board must register the Phase 2 proposal');
+const qaProfile = readFileSync(join(root, '.github/agents/qa.agent.md'), 'utf8');
+const playwrightMcp = JSON.parse(readFileSync(join(root, '.vscode/mcp.json'), 'utf8')).servers.playwright;
+assert(qaProfile.includes("'playwright/*'") && qaProfile.includes('QA_BROWSER_AUTOMATION.md') && qaProfile.includes('mark browser checks NOT RUN'), 'QA profile must expose bounded Playwright verification');
+assert(playwrightMcp.args.some(arg => /^@playwright\/mcp@\d+\.\d+\.\d+$/.test(arg)) && !playwrightMcp.args.some(arg => arg.includes('@latest')), 'Playwright MCP must be pinned to an exact version');
+assert(playwrightMcp.args.includes('--isolated'), 'Playwright MCP must use an isolated browser profile');
+assert(playwrightMcp.args.includes('--browser=chromium'), 'Playwright MCP must select Chromium explicitly');
 const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
 const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');
 for (const requirement of ['AZ-ARCH-1', 'AZ-CON-1', 'AZ-PLAN-1', 'AZ-OWN-1', 'NOT CHECKED', '--read-only', '--tool', 'hooks', 'Copilot CLI does not read', 'separate', 'NOT RUN']) {
@@ -121,5 +153,6 @@ for (const entry of ['prompts/BOOTSTRAP.md', '.github/agents/chief-of-staff.agen
 }
 assert(azureChecker.includes('-CommandType Application') && azureChecker.includes('LOCAL_CHECKS_COMPLETE'), 'Azure checker must expose offline discovery semantics');
 const factoryCi = parseDocument(readFileSync(join(root, '.github/workflows/ci.yml'), 'utf8')).toJS();
+assert(factoryCi.jobs.validate.steps.some(step => step.run === './tests/factory-manifest.tests.ps1'), 'Factory CI must execute the Phase 2 manifest suite');
 assert(factoryCi.jobs.validate.steps.some(step => step.run === './tests/azure-integration.tests.ps1'), 'Factory CI must execute the offline Azure suite');
 console.log(`PASS: YAML/frontmatter syntax, pinned actions, promotion dependencies, deployment protection contracts, guided onboarding, review policy and optional Azure wiring, Markdown tables/fences, and ${localLinks} local links. Conversational behavior, live review enforcement and Azure activation were not evaluated.`);

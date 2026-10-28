@@ -29,6 +29,7 @@ try {
         $tools = ConvertFrom-Json -InputObject $toolLine
         if ($tools.Count -eq 0 -or '*' -in $tools) { throw 'Missing or unrestricted tool list.' }
         if ($profile.Name -ne 'chief-of-staff.agent.md' -and 'task' -in $tools) { throw 'Specialist can delegate.' }
+        if (($profile.Name -eq 'qa.agent.md') -ne ('playwright/*' -in $tools)) { throw 'Playwright MCP tools must reach only the QA CLI profile.' }
         if ($profile.Name -in @('security.agent.md', 'docs.agent.md', 'architect.agent.md') -and 'powershell' -in $tools) { throw 'Unexpected terminal access.' }
         if ($profile.Name -eq 'security.agent.md' -and ('edit' -in $tools -or 'create' -in $tools -or 'apply_patch' -in $tools)) { throw 'Security reviewer can edit.' }
         if ($profile.Name -eq 'chief-of-staff.agent.md' -and ($content -notmatch '(?m)^infer: false\r?$' -or 'task' -notin $tools)) { throw "Commander configuration is incorrect. Tools: $($tools -join ', '); infer: $([regex]::Match($content, '(?m)^infer:.*').Value)" }

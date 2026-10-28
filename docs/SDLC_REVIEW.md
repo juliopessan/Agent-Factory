@@ -76,6 +76,61 @@ These six operational practices complement the existing factory workflow without
 - **Parallelization:** Use separate git worktrees only when each worktree maps to one task contract and one exclusive write set; cascade dependent tasks sequentially through Chief of Staff integration.
 - **Subagent Orchestration:** Give each subagent the minimum context required (contract version, owned files, acceptance checks) and let it iteratively retrieve targeted code slices rather than loading the entire repository upfront.
 
+## Agent Code Review Reference
+
+These practices adapt publicly described agent code review patterns (layered "Swiss cheese" checks used by the Claude Code team at Anthropic) to the factory. The shared [review policy](../REVIEW.md) (REV-1) is authoritative; the project [REVIEW](../templates/REVIEW.md) template adds local failure smells, accepted false positives, repeated-finding rules, and reviewer regression cases. Folders, agents, workflows, and gates are unchanged.
+
+| Review Layer | What Teams Apply | Existing Factory Anchor | Adoption In This Kit |
+| --- | --- | --- | --- |
+| Pre-review self checks | Author runs the cheapest relevant checks, then a separate-context reviewer reads the diff against intent and contract | [Chief of Staff](../.github/agents/chief-of-staff.agent.md) step 7, [TASK_CONTRACT](../templates/TASK_CONTRACT.md) | Adopted: clean-context review rule |
+| Deterministic CI | Lint, type, test, and build failures block merge | [CICD](CICD.md), [Factory CI](../.github/workflows/ci.yml) | Already present |
+| Intent-aware agent review | Diff read against the repository and stated objective; findings cite file and line, carry severity and origin, and skip style-only nits | [Review policy](../REVIEW.md) findings contract | Adopted; model agreement alone is not evidence, so consensus filtering is optional and costly |
+| Security review | Dedicated security pass on the integrated candidate | [Security Reviewer](../.github/agents/security.agent.md) | Already present; now reads the review guide |
+| Risk-tiered review | The change, not the author, sets Quick/Standard/Deep depth | [Review policy](../REVIEW.md) risk and depth, [TASK_BOARD](../templates/TASK_BOARD.md) | Adopted; tiers never waive human approval, and agent approval never counts as human approval |
+| Merge queue re-check | Checks re-run with the change applied on the latest base | Branch protection in [CICD](CICD.md) | Platform setting, not kit content |
+| Post-merge safety | Feature flags, gradual rollout, and fast rollback | [RELEASE_PLAN](../templates/RELEASE_PLAN.md), [OPERATIONS_RUNBOOK](../templates/OPERATIONS_RUNBOOK.md) | Already present as DEV/UAT/PROD promotion and rollback |
+
+### Review Guardrails
+
+- **Low cost, high value:** separate-context review, a code-owner project review guide, repeated findings promoted to rules, three-round escalation, and agent approval never counting as human approval need no extra tooling.
+- **Feedback loop:** a real finding seen in two or more tasks becomes a lint/test rule, an instruction line, or a guide entry through a reviewed change request; a false positive becomes a Do Not Flag entry.
+- **Reviewer regression:** confirmed escaped defects become reviewer regression cases, re-run whenever reviewer prompts, profiles, models, or tools change.
+- **Noise budget:** an agent author fixes every nit, and each fix triggers another round, so skip style-only nits and re-review only the changed slice and unresolved findings.
+- **Limits:** published results come from a codebase models know well; expect lower bug-detection rates on private code, and do not reduce human review for Deep-tier changes on the strength of agent review alone. Consensus filtering across parallel reviewers and continuous evaluation suites carry real token cost; adopt them only after measuring signal quality.
+
+## Software Factory Reference
+
+Public "software factory" discussions describe a layered stack around an agentic delivery loop in which humans and agents collaborate and every stage can be measured. This kit already is a lightweight, local-first version of that stack. The map below names what exists, what is optional, and what stays outside the kit; folders, agents, gates, and the Microsoft-platform constraint are unchanged.
+
+| Factory Layer | What It Means | Existing Factory Anchor | Status In This Kit |
+| --- | --- | --- | --- |
+| Factory as code | Agents, rules, and stages are declared in versioned files that can be reviewed, tested, and rolled back | [Agent profiles](../.github/agents/), [repository instructions](../.github/copilot-instructions.md), [templates](../templates/), [Factory CI](../.github/workflows/ci.yml) | Present: Git history is the version, structural tests guard the contracts |
+| Data and context | What each agent may read: contracts, working records, memory, and connected tools | [TASK_CONTRACT](../templates/TASK_CONTRACT.md), [TASK_BOARD](../templates/TASK_BOARD.md), [Azure integration](AZURE_INTEGRATION.md) | Present: bounded packets and records; MCP access stays read-only and separately authorized |
+| Compute | Where agents run, ideally an isolated environment instead of a personal workstation | [Repository instructions](../.github/copilot-instructions.md) (instructions are not a sandbox) | Partial: prefer isolated worktrees, dev containers, or hosted runners for unattended work; isolation is a platform setting |
+| Inference | Which model serves which task, swappable without rewriting the factory | [Token optimization](#agent-execution-optimization-reference), [repository instructions](../.github/copilot-instructions.md) | Partial: right-size models per task within approved Microsoft services such as Microsoft Foundry and the configured Copilot models; no other inference provider is implied |
+| Measurement | Cost, cycle time, autonomy, rework, and correctness measured on the team's own work | [Factory companion metrics](factory-extensions/OVERVIEW.md), [review signal quality](../templates/REVIEW.md), README measures | Present for reported metrics; workflow benchmarks are optional and NOT RUN until a team builds them |
+| Orchestration | The staged loop from intake to monitoring, with automation per stage | [Delivery lifecycle](../README.md#the-delivery-lifecycle), [Chief of Staff](../.github/agents/chief-of-staff.agent.md) | Present: coordinator-led and gated, not autonomous |
+| Access | Where work is dispatched from: chat, CLI, issue tracker, team chat, API | [Bootstrap](../prompts/BOOTSTRAP.md), VS Code and Copilot CLI clients | Partial: chat and CLI only; tracker or team-chat dispatch must reuse the same gates and is not bundled |
+
+### Loop And Human Touchpoints
+
+| Loop Stage | Factory Stage | Human Touchpoint |
+| --- | --- | --- |
+| Idea or bug intake and triage | Discover | A person owns priority and whether the work is worth building |
+| Specification | Design (architecture, contracts, plan) | Spec review: named-version approval before implementation |
+| Implementation and verification | Establish, Assign, Implement, Integrate, Verify | Review per [REVIEW.md](../REVIEW.md); agent review is never approval |
+| Ship and monitor | Release, operations runbook | Release decision and post-deploy observation stay human |
+| Product review | Report, UAT acceptance | Business acceptance stays human |
+
+### Factory Guardrails
+
+- **Local first is legitimate:** start with the local, gated loop. Move unattended or scheduled runs to an isolated, least-privilege environment before giving agents credentials or long-running autonomy.
+- **Measure before routing:** choose a cheaper model or lower reasoning effort for a task type only after measuring quality on that team's own representative tasks, for example correctness against cost per task. Public leaderboards are context, not evidence for your workflow.
+- **Flow over output:** time from kickoff to first PR is usually short; time waiting on human review dominates. Track kickoff to PR, PR to first human review, and review to merge before adding more agents.
+- **Improvement stays reviewed:** evaluation results may propose changes to skills, prompts, or model choices, but promotion follows a change request. The factory never self-modifies its governance, gates, or instructions.
+- **Two human roles:** product-facing engineers own intent, specs, and acceptance; factory engineers own agent profiles, checks, measurements, and their maintenance. One person may hold both, but both responsibilities must be assigned.
+- **Sovereignty and limits:** keep factory data in approved organizational systems. Declarative cloud factories, multi-surface dispatch, and automatic model routing are enterprise-scale options, not prerequisites for value.
+
 ## Next Steps
 
 1. Select a pilot product and complete the scope/runtime/environment decisions.

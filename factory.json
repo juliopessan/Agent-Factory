@@ -1,0 +1,25 @@
+{
+  "apiVersion": "copilot-agent-factory/v1alpha1",
+  "kind": "Factory",
+  "metadata": { "name": "enterprise-delivery", "version": "0.1.0" },
+  "runtime": { "provider": "github-copilot", "executionMode": "local" },
+  "stages": ["triage", "specification", "implementation", "verification", "human-review", "delivery"],
+  "approvalGates": ["beforeImplementation", "beforeMerge", "beforeRelease"],
+  "agents": {
+    "coordinator": ".github/agents/chief-of-staff.agent.md",
+    "architect": ".github/agents/architect.agent.md",
+    "implementation": [".github/agents/backend.agent.md", ".github/agents/frontend.agent.md", ".github/agents/integrations.agent.md"],
+    "verification": [".github/agents/qa.agent.md", ".github/agents/security.agent.md", ".github/agents/docs.agent.md"]
+  },
+  "contracts": {
+    "task": "templates/TASK_CONTRACT.md",
+    "architecture": "templates/ARCHITECTURE.md",
+    "implementationPlan": "templates/IMPLEMENTATION_PLAN.md",
+    "testStrategy": "templates/TEST_STRATEGY.md",
+    "agentReport": "templates/AGENT_REPORT.md",
+    "reviewPolicy": "REVIEW.md",
+    "projectReviewGuide": "templates/REVIEW.md"
+  },
+  "verification": { "requireExecutedChecks": true, "requireEvidenceForPass": true, "failOnBlockingFindings": true },
+  "delivery": { "mergeRequiresHumanApproval": true, "releaseRequiresSeparateAuthorization": true }
+}

@@ -75,11 +75,13 @@ $profiles = foreach ($agentId in $agentIds) {
             throw "Invalid $key field: $source"
         }
     }
-    if ($values['tools'] -notmatch '^\[(?:[a-z]+(?:, [a-z]+)*)?\]$') {
+    $toolPattern = '(?:[a-z]+|''[a-z0-9-]+/\*'')'
+    if ($values['tools'] -notmatch "^\[(?:$toolPattern(?:, $toolPattern)*)?\]$") {
         throw "Unsupported bundled tool list: $source"
     }
     $aliases = $values['tools'].Trim('[', ']') -split ', ' | Where-Object { $_ }
     $tools = @(foreach ($alias in $aliases) {
+        if ($alias -match "^'(?<server>[a-z0-9-]+)/\*'$") { "$($Matches['server'])/*"; continue }
         if (-not $toolMap.ContainsKey($alias)) { throw "Unmapped tool alias: $alias" }
         $toolMap[$alias]
     })
