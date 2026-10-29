@@ -41,7 +41,7 @@ New-Item -ItemType Directory -Force -Path $Inbox, "$Pilot/evidence" | Out-Null
 & $Script -Action Plan -ProjectRoot $Pilot
 ```
 
-Add the two pilot work items to the disposable project's `docs/factory/TASK_BOARD.md`, for example `PILOT-VSC-001` and `PILOT-CLI-001`, each with owner, write set and acceptance check. Use a small real change, such as a PowerShell function with a built-in-only test script. Commit that board change in the disposable repository.
+Add the two pilot work items to the disposable project's `docs/factory/TASK_BOARD.md`, for example `PILOT-VSC-001` and `PILOT-CLI-001`, each with owner, write set and acceptance check. Use a small real change, such as a PowerShell function with a built-in-only test script. Also add rows to its `| Gate |` register whose first cell names the manifest gate, for example `beforeImplementation: PILOT-VSC-001`, `beforeMerge: PILOT-VSC-001` and `beforeRelease: PILOT-VSC-001`, with the human approval reference in the third column. `Plan` reports a gate as `MISSING` unless such a row exists. Commit that board change in the disposable repository.
 
 ## Step 1: Load The Event Helper
 
@@ -150,8 +150,10 @@ Return these to the Chief of Staff for the kit board: the transcript, `report.js
 | --- | --- | --- |
 | Pilot runbook and event helper | PREPARED | This file; the helper was written against `Invoke-FactoryManifest.ps1` rules but NOT RUN, because PowerShell was unavailable |
 | Console with the shipped `factory.json` in headless Chromium 1194 | PASS with findings | Overview reported "Structure valid in console" and rendered six stages, three gates, eight agents, seven contracts and five enforced invariants. Commands generated the six pilot commands with quoted paths. Zero JavaScript errors and zero non-file requests. Session-local screenshots only |
+| Automated ledger leg on GitHub Actions (`windows-latest`, PowerShell 7.6.7) | PASS | [Ledger Pilot](../../.github/workflows/ledger-pilot.yml) run 40794201282 on commit `1e3dc47`: 34 of 34 checks. Validate and Plan on a disposable clone; RUN-CI-001 completed PASS and accepted; RUN-CI-002 refused PASS on stale evidence and closed FAIL; probes P1 to P7 rejected with the expected messages and no ledger file written. Scripted synthetic item, not Copilot agents; approvals cite the operator's authorization for this leg, not per-gate reviews, so the 0.194 s review wait is not a human measure |
 | Ledger steps 0 to 4 in VS Code and Copilot CLI | NOT RUN | Requires the operator's workstation |
-| Console Runs tab with a real pilot report | NOT RUN | Requires `report.json` from Step 4 |
+| Console Runs tab with the automated leg's report | PASS | The report JSON from run 40794201282's log (SHA256 `d03fff76…ae05`) loaded in headless Chromium: 2 runs, 0 violations, 1 accepted, cost NOT OBSERVED with 0 known and 2 unknown. Zero JavaScript errors, no network requests, no overflow at 500 px |
+| Console Runs tab with an operator report | NOT RUN | Requires `report.json` from Step 4 |
 | Human acceptance | NOT RUN | Requires the operator's decision |
 
 ## Pilot Findings
@@ -160,3 +162,5 @@ Return these to the Chief of Staff for the kit board: the transcript, `report.js
 | --- | --- | --- | --- |
 | PILOT-F1 | Low cosmetic / INTRODUCED by UI-001 | The Overview gate-invariant grid has five cells in three columns; the empty sixth slot shows the grid's dark hairline background as a solid black block | OPEN: fix after the pilot (fill the last row), so the candidate under test does not change mid-pilot |
 | PILOT-F2 | Low usability / INTRODUCED by UI-001 | Choosing a file only fills the text box; nothing loads until the Load button is pressed | OPEN: documented in Step 4; decide after operator feedback whether choosing a file should load it directly |
+| PILOT-F3 | Low documentation / INTRODUCED by FAC-001 | `Plan` reported all three gates `MISSING` on the kit's own board: its register names rows by initiative, and `Plan` only matches rows whose first cell names a manifest gate | FIXED in this runbook (Step 0 now adds gate-named register rows); whether the kit board should adopt gate-named rows is a separate decision |
+| PILOT-F4 | Low usability / INTRODUCED by FAC-001 and UI-001 | RUN-CI-002 shows "1/1 observed PASS" next to `COMPLETED_FAIL`; neither `Report` nor the Console says that evidence went stale after a later commit | OPEN: candidate `Report` field for stale evidence, needs its own approval |

@@ -146,7 +146,7 @@ Scope, contracts and plan: [Phase 2 specification](../factory-extensions/PHASE2_
 | FAC-002 | QA Engineer (performed by coordinator, not independent) | tests/factory-manifest.tests.ps1 only | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: HOSTED CI PASS |
 | FAC-003 | Security Reviewer | NONE; read-only | FAC-ARCH-1 | NOT RUN: independent Deep review outstanding |
 | FAC-004 | Documentation Engineer (performed by coordinator) | OVERVIEW Phase 2 section; README entry point | FAC-PLAN-1 | IMPLEMENTED |
-| FAC-PILOT | Human operator | Disposable project only | FAC-PLAN-1 step 8 | IN PROGRESS: operator pack ready in PHASE2_PILOT.md; Console leg observed in headless Chromium with findings PILOT-F1 and PILOT-F2 open; ledger and client legs NOT RUN |
+| FAC-PILOT | Human operator | Disposable project only | FAC-PLAN-1 step 8 | IN PROGRESS: automated ledger leg PASS (Ledger Pilot run 40794201282, 34/34, synthetic item) and Console legs PASS in headless Chromium; findings PILOT-F1, F2 and F4 open, F3 fixed in the runbook; client legs and human acceptance NOT RUN |
 
 Evidence: `npm run test:structure` passes locally against the shipped manifest. PowerShell was unavailable in the authoring session and its installation was declined there, so the PowerShell suite did NOT RUN locally; Factory CI (`windows-latest`, pwsh) is the first execution. Hosted evidence: Factory CI run 40672030034 passed on candidate 993bbda (first execution of the Phase 2 suite), and run 40682578450 passed on c1d23a8, the head merged to main in ea37249. Not DONE until the independent Security review completes and a pilot is observed or explicitly waived.
 
