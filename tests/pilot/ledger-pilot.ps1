@@ -48,16 +48,20 @@ function New-PilotEvent {
 }
 
 function Invoke-Record {
-    param($Entry, [switch]$Probe)
+    param($Entry)
     $path = Join-Path $inbox ('{0}-{1:D4}.json' -f $Entry.runId, $Entry.sequence)
     $Entry | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $path -Encoding utf8
-    return & $script -Action Record -ProjectRoot $pilot -InputPath $path -RunId $Entry.runId -WhatIf:$Probe
+    return & $script -Action Record -ProjectRoot $pilot -InputPath $path -RunId $Entry.runId
 }
 
-function Get-LedgerCount {
+# Paths and content hashes of every ledger file, so a rejected write that adds, removes or rewrites a file is detected.
+function Get-LedgerSnapshot {
     $ledger = Join-Path $pilot 'docs/factory/extensions/ledger'
-    if (-not (Test-Path -LiteralPath $ledger)) { return 0 }
-    return @(Get-ChildItem -LiteralPath $ledger -Recurse -File).Count
+    if (-not (Test-Path -LiteralPath $ledger)) { return '' }
+    $lines = foreach ($file in (Get-ChildItem -LiteralPath $ledger -Recurse -File | Sort-Object FullName)) {
+        '{0}:{1}' -f [IO.Path]::GetRelativePath($ledger, $file.FullName), (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash
+    }
+    return ($lines -join "`n")
 }
 
 function Assert-Recorded {
@@ -66,15 +70,16 @@ function Assert-Recorded {
     Add-Result "Record $($Entry.eventId) $($Entry.eventType)" ($outcome.Status -ceq 'RECORDED') $outcome.Status
 }
 
+# Probes use the real write path: the disposable ledger must stay byte-for-byte unchanged after each rejection.
 function Assert-Rejected {
-    param([string]$Name, $Entry, [string]$Expected, [switch]$Write)
-    $before = Get-LedgerCount
+    param([string]$Name, $Entry, [string]$Expected)
+    $before = Get-LedgerSnapshot
     $message = $null
-    try { $null = Invoke-Record $Entry -Probe:(-not $Write) } catch { $message = $_.Exception.Message }
-    $after = Get-LedgerCount
-    $passed = ($null -ne $message) -and $message.Contains($Expected) -and ($before -eq $after)
+    try { $null = Invoke-Record $Entry } catch { $message = $_.Exception.Message }
+    $unchanged = (Get-LedgerSnapshot) -ceq $before
+    $passed = ($null -ne $message) -and $message.Contains($Expected) -and $unchanged
     $detail = if ($message) { $message } else { 'Accepted unexpectedly' }
-    Add-Result $Name $passed "$detail (ledger files $before -> $after)"
+    Add-Result $Name $passed "$detail (ledger unchanged: $unchanged)"
 }
 
 function Invoke-Check {
@@ -84,7 +89,7 @@ function Invoke-Check {
     $code = $LASTEXITCODE
     Set-Content -LiteralPath $evidence -Encoding utf8 -Value (@("Command: pwsh -NoProfile -File tests/pilot-greeting.tests.ps1", "Exit: $code") + @($output | ForEach-Object { "$_" }))
     Add-Result "Acceptance check $EvidenceName" ($code -eq 0) "Exit $code"
-    return $code
+    if ($code -ne 0) { throw "Acceptance check $EvidenceName failed with exit $code; no PASS is recorded." }
 }
 
 $null = New-Item -ItemType Directory -Force -Path $work, $inbox, $OutputDirectory
@@ -121,7 +126,7 @@ Assert-Recorded (New-PilotEvent $r $w 3 specification stage.entered)
 Assert-Rejected 'P1 implementation before approval' (New-PilotEvent $r $w 4 implementation stage.entered) 'entered without a recorded beforeImplementation approval'
 Assert-Rejected 'P2 agent-sourced approval' (New-PilotEvent $r $w 4 specification approval.recorded -SourceType reported) 'Approvals require a human source.'
 Assert-Rejected 'P3 observed PASS without evidence' (New-PilotEvent $r $w 4 verification check.completed -Status PASS -SourceType observed) 'Observed PASS or FAIL requires an existing evidence file.'
-Assert-Rejected 'P4 invented commit' (New-PilotEvent $r $w 4 triage stage.entered -Commit abc123) 'Commit must be a full lowercase SHA or null'
+Assert-Rejected 'P4 malformed commit (format only; existence is not checked)' (New-PilotEvent $r $w 4 triage stage.entered -Commit abc123) 'Commit must be a full lowercase SHA or null'
 Assert-Recorded (New-PilotEvent $r $w 4 specification approval.recorded -SourceType human -Kind operator -Reference $approvalReference)
 Assert-Recorded (New-PilotEvent $r $w 5 implementation stage.entered)
 Set-Content -LiteralPath (Join-Path $pilot 'src/Get-PilotGreeting.ps1') -Encoding utf8 -Value 'function Get-PilotGreeting { param([Parameter(Mandatory)][string]$Name) "Hello, $Name" }'
@@ -133,14 +138,14 @@ $null = Invoke-Git @('add', '--', 'src/Get-PilotGreeting.ps1', 'tests/pilot-gree
 $null = Invoke-Git @('commit', '--quiet', '-m', 'PILOT-CI-001: add Get-PilotGreeting')
 $commitA = (Invoke-Git @('rev-parse', 'HEAD')).Trim()
 Assert-Recorded (New-PilotEvent $r $w 6 verification stage.entered)
-$null = Invoke-Check 'ci-001-check.txt'
+Invoke-Check 'ci-001-check.txt'
 Assert-Recorded (New-PilotEvent $r $w 7 verification check.completed -Status PASS -SourceType observed -Kind qa-check -Evidence evidence/ci-001-check.txt -Commit $commitA)
 Assert-Recorded (New-PilotEvent $r $w 8 human-review stage.entered)
 Assert-Recorded (New-PilotEvent $r $w 9 human-review approval.recorded -SourceType human -Kind operator -Reference $approvalReference)
 Assert-Recorded (New-PilotEvent $r $w 10 delivery stage.entered)
 Assert-Recorded (New-PilotEvent $r $w 11 delivery run.completed -Status PASS)
-Assert-Rejected 'P5 overwrite an existing event' (New-PilotEvent $r $w 11 delivery run.completed -Status PASS) 'Event sequence must continue the run contiguously.' -Write
-Assert-Rejected 'P6 event after run.completed' (New-PilotEvent $r $w 12 delivery stage.entered) 'Events cannot follow run.completed.' -Write
+Assert-Rejected 'P5 overwrite an existing event' (New-PilotEvent $r $w 11 delivery run.completed -Status PASS) 'Event sequence must continue the run contiguously.'
+Assert-Rejected 'P6 event after run.completed' (New-PilotEvent $r $w 12 delivery stage.entered) 'Events cannot follow run.completed.'
 
 # RUN-CI-002: evidence goes stale after a later commit, so PASS must be refused and the run closes FAIL.
 $r = 'RUN-CI-002'; $w = 'PILOT-CI-002'
@@ -150,7 +155,7 @@ Assert-Recorded (New-PilotEvent $r $w 3 specification stage.entered)
 Assert-Recorded (New-PilotEvent $r $w 4 specification approval.recorded -SourceType human -Kind operator -Reference $approvalReference)
 Assert-Recorded (New-PilotEvent $r $w 5 implementation stage.entered)
 Assert-Recorded (New-PilotEvent $r $w 6 verification stage.entered)
-$null = Invoke-Check 'ci-002-check.txt'
+Invoke-Check 'ci-002-check.txt'
 Assert-Recorded (New-PilotEvent $r $w 7 verification check.completed -Status PASS -SourceType observed -Kind qa-check -Evidence evidence/ci-002-check.txt -Commit $commitA)
 Add-Content -LiteralPath (Join-Path $pilot 'src/Get-PilotGreeting.ps1') -Encoding utf8 -Value '# Rework after verification'
 $null = Invoke-Git @('commit', '--quiet', '-am', 'PILOT-CI-002: rework after verification')
@@ -180,6 +185,14 @@ $lines = @('## FAC-PILOT automated ledger leg', '',
 $lines += $results | ForEach-Object { '| {0} | {1} | {2} |' -f $_.Check, $_.Result, ($_.Detail -replace '\|', '/') }
 $lines += @('', '```json', $reportJson, '```')
 $lines | Write-Output
+# Source records for audit: the runner is discarded, so the synthetic ledger events and raw check output go to the retained job log.
+foreach ($folder in @('ledger', 'evidence')) {
+    foreach ($file in (Get-ChildItem -LiteralPath (Join-Path $OutputDirectory $folder) -Recurse -File | Sort-Object FullName)) {
+        Write-Output "::group::$folder/$([IO.Path]::GetRelativePath((Join-Path $OutputDirectory $folder), $file.FullName).Replace('\', '/'))"
+        Get-Content -LiteralPath $file.FullName -Raw | Write-Output
+        Write-Output '::endgroup::'
+    }
+}
 if ($env:GITHUB_STEP_SUMMARY) { Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Encoding utf8 -Value $lines }
 Remove-Item -LiteralPath $work -Recurse -Force
 if ($failed) { throw "$failed ledger pilot checks failed." }

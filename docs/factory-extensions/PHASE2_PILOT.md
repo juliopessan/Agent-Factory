@@ -19,12 +19,13 @@ The human operator runs the pilot on a workstation with both clients. The author
 ## Prerequisites
 
 - PowerShell 7.2 or later, Git, VS Code with GitHub Copilot, and GitHub Copilot CLI, all signed in through their official flows.
+- The Chief of Staff profile visible in each client: in VS Code, the workspace agent picker on the disposable project; in Copilot CLI, `/agent` after `setup-local.ps1` installed the CLI-adapted profiles. If the CLI profile is missing, stop and request installation approval separately; this pilot does not authorize it.
 - This kit checked out at the commit under test. Record that commit and the script hash.
 - No secrets, customer data or production paths anywhere in the project, the inputs or the evidence.
 
 ## Step 0: Prepare The Disposable Project
 
-Run in PowerShell 7. Adjust the three paths; keep the inbox outside the project so event inputs never enter the ledger tree.
+Run in PowerShell 7. Adjust the three paths; keep the inbox outside the project so event inputs never enter the ledger tree. The transcript captures only this shell; Step 5 lists the client traces to keep as well.
 
 ```powershell
 $Kit = 'C:/Projects/Copilot-Agent-Factory'
@@ -35,13 +36,22 @@ Start-Transcript -Path "$Inbox-transcript.txt"
 git -C $Kit rev-parse HEAD
 Get-FileHash -LiteralPath $Script -Algorithm SHA256
 $PSVersionTable.PSVersion.ToString(); code --version; copilot --version
+if (Test-Path -LiteralPath $Pilot) { throw "$Pilot already exists; choose a new disposable path." }
 git clone --quiet $Kit $Pilot
+if ($LASTEXITCODE -ne 0) { throw 'Clone failed; stop here.' }
 New-Item -ItemType Directory -Force -Path $Inbox, "$Pilot/evidence" | Out-Null
 & $Script -Action Validate -ProjectRoot $Pilot
 & $Script -Action Plan -ProjectRoot $Pilot
 ```
 
-Add the two pilot work items to the disposable project's `docs/factory/TASK_BOARD.md`, for example `PILOT-VSC-001` and `PILOT-CLI-001`, each with owner, write set and acceptance check. Use a small real change, such as a PowerShell function with a built-in-only test script. Also add rows to its `| Gate |` register whose first cell names the manifest gate, for example `beforeImplementation: PILOT-VSC-001`, `beforeMerge: PILOT-VSC-001` and `beforeRelease: PILOT-VSC-001`, with the human approval reference in the third column. `Plan` reports a gate as `MISSING` unless such a row exists. Commit that board change in the disposable repository.
+Plan both work items before any implementation, following the [Factory approval gates](../../.github/copilot-instructions.md#approval-gates). For each item, for example `PILOT-VSC-001` and `PILOT-CLI-001`, the Chief of Staff drafts in the disposable project a task contract from [TASK_CONTRACT](../../templates/TASK_CONTRACT.md), a short implementation plan and an ownership row on its `docs/factory/TASK_BOARD.md`. Use a small real change, such as a PowerShell function with a built-in-only test script.
+
+You then record two separate decisions per item on that board:
+
+1. Approval of the named contract, plan and ownership versions. Add it as a `| Gate |` register row whose first cell names the manifest gate, for example `beforeImplementation: PILOT-VSC-001`, with your approval reference in the third column. `Plan` reports a gate as `MISSING` unless such a row exists.
+2. Action-specific authorization for commits inside the disposable repository only. It does not cover a push, a merge into any shared branch or anything outside `$Pilot`.
+
+Add `beforeMerge: <item>` only after your review decision in Step 2. Leave `beforeRelease` absent: the pilot has no release, so `Plan` shows it `MISSING` by design.
 
 ## Step 1: Load The Event Helper
 
@@ -103,32 +113,36 @@ Run the governance probes now, at sequence 4, before the real approval. Each mus
 | P1 implementation before approval | `Add-PilotEvent $R $W 4 implementation stage.entered -Probe` | `Stage implementation entered without a recorded beforeImplementation approval.` |
 | P2 agent-sourced approval | `Add-PilotEvent $R $W 4 specification approval.recorded -SourceType reported -Probe` | `Approvals require a human source.` |
 | P3 observed PASS without evidence | `Add-PilotEvent $R $W 4 verification check.completed -Status PASS -SourceType observed -Probe` | `Observed PASS or FAIL requires an existing evidence file.` |
-| P4 invented commit | `Add-PilotEvent $R $W 4 triage stage.entered -Commit abc123 -Probe` | `Commit must be a full lowercase SHA or null; never an invented value.` |
+| P4 malformed commit | `Add-PilotEvent $R $W 4 triage stage.entered -Commit abc123 -Probe` | `Commit must be a full lowercase SHA or null; never an invented value.` |
 
-Continue with the real sequence. Run the work item's acceptance check yourself and keep its raw output as the evidence file.
+P4 proves only the format check: `Record` does not ask Git whether a well-formed SHA exists, so the commit you record must come from `git rev-parse` as below.
+
+Continue with the real sequence. Run the work item's acceptance check yourself and keep its raw output as the evidence file. The references use `$W`, so each item cites its own decisions.
 
 ```powershell
-Add-PilotEvent $R $W 4 specification approval.recorded -SourceType human -Kind operator -Reference 'Disposable board PILOT-VSC-001 beforeImplementation approved by the operator'
+Add-PilotEvent $R $W 4 specification approval.recorded -SourceType human -Kind operator -Reference "Disposable board beforeImplementation: $W approved by the operator"
 Add-PilotEvent $R $W 5 implementation stage.entered
 # The agents implement and commit in $Pilot. Then:
 Add-PilotEvent $R $W 6 verification stage.entered
 $C = git -C $Pilot rev-parse HEAD
-pwsh -NoProfile -File "$Pilot/tests/<pilot-test>.ps1" *> "$Pilot/evidence/vsc-check.txt"; $LASTEXITCODE
-Add-PilotEvent $R $W 7 verification check.completed -Status PASS -SourceType observed -Kind qa-engineer -Evidence evidence/vsc-check.txt -Commit $C
+$E = "evidence/$W-check.txt"
+pwsh -NoProfile -File "$Pilot/tests/<pilot-test>.ps1" *> "$Pilot/$E"
+if ($LASTEXITCODE -ne 0) { throw "Acceptance check failed with exit $LASTEXITCODE; record FAIL, not PASS." }
+Add-PilotEvent $R $W 7 verification check.completed -Status PASS -SourceType observed -Kind qa-engineer -Evidence $E -Commit $C
 Add-PilotEvent $R $W 8 human-review stage.entered
-# Review the diff yourself, then:
-Add-PilotEvent $R $W 9 human-review approval.recorded -SourceType human -Kind operator -Reference 'Disposable board PILOT-VSC-001 beforeMerge approved by the operator'
+# Review the diff yourself, add the beforeMerge: $W register row with your decision, then:
+Add-PilotEvent $R $W 9 human-review approval.recorded -SourceType human -Kind operator -Reference "Disposable board beforeMerge: $W approved by the operator"
 Add-PilotEvent $R $W 10 delivery stage.entered
 Add-PilotEvent $R $W 11 delivery run.completed -Status PASS
 # Immutability probe: must be rejected
 Add-PilotEvent $R $W 11 delivery run.completed -Status PASS
 ```
 
-The immutability probe must fail with `Event sequence must continue the run contiguously.`, which shows the ledger does not overwrite entries. If the check fails, record `-Status FAIL` with its evidence, fix, commit and re-run the check before completing. Use `-Status FAIL` on `run.completed` if the item is abandoned. Do not edit ledger files by hand.
+The immutability probe must fail with `Event sequence must continue the run contiguously.`, which shows the ledger does not overwrite entries. If the check fails, the guard stops before PASS: record sequence 7 as `-Status FAIL` with the same evidence, fix and commit, then record a fresh check on the new commit at the next sequence before continuing. Use `-Status FAIL` on `run.completed` if the item is abandoned. Do not edit ledger files by hand.
 
 ## Step 3: Run The Copilot CLI Work Item
 
-Open a new terminal in `$Pilot`, start `copilot`, select the Chief of Staff agent installed by `setup-local.ps1`, and give it the `PILOT-CLI-001` brief. Repeat Step 2 with `$R = 'RUN-CLI-001'`, `$W = 'PILOT-CLI-001'` and `evidence/cli-check.txt`; the probes may be skipped for this run. Model-backed interaction consumes the operator's Copilot plan allowance.
+Open a new terminal in `$Pilot`, start `copilot`, confirm with `/agent` that the Chief of Staff profile installed by `setup-local.ps1` is listed and select it, and give it the `PILOT-CLI-001` brief. Repeat Step 2 with `$R = 'RUN-CLI-001'` and `$W = 'PILOT-CLI-001'`; the evidence path and both approval references follow `$W`, and the `PILOT-CLI-001` board rows must hold your own decisions for this item. The probes may be skipped for this run. Model-backed interaction consumes the operator's Copilot plan allowance.
 
 ## Step 4: Report And Console
 
@@ -142,7 +156,23 @@ In the Console, choose `$Kit/factory.json` on Overview and press Load manifest, 
 
 ## Step 5: Return The Evidence
 
-Return these to the Chief of Staff for the kit board: the transcript, `report.json`, the four probe messages, client and PowerShell versions, the kit commit and script hash, the two Console screenshots, and your accept or reject decision with any deviation. The ledger proves what was recorded, not that it happened; the transcript and evidence files are what make the `observed` entries credible. Delete the disposable project after the evidence is copied.
+Before deleting anything, keep an archive of the source records and return it to the Chief of Staff for the kit board:
+
+```powershell
+git -C $Pilot log --stat > "$Inbox/pilot-history.txt"
+Compress-Archive -Path "$Pilot/docs/factory/extensions/ledger", "$Pilot/evidence", "$Pilot/docs/factory/TASK_BOARD.md" -DestinationPath "$Inbox/pilot-records.zip"
+```
+
+| Record | Why |
+| --- | --- |
+| `pilot-records.zip` (ledger, evidence, disposable board) and `pilot-history.txt` | The ledger events, raw check output, decisions and tested commits behind every `observed` entry |
+| The shell transcript and `report.json` | Commands, exits and the derived report |
+| The VS Code chat for `PILOT-VSC-001`, exported from the chat view | Shows the agent work in VS Code |
+| The Copilot CLI session for `PILOT-CLI-001`, saved with the client's export or a terminal log | Shows the agent work in the CLI |
+| The probe messages, client and PowerShell versions, kit commit and script hash, and the two Console screenshots | Reproducibility |
+| Your accept or reject decision with any deviation | Human acceptance |
+
+Redact anything sensitive before returning it. The ledger proves what was recorded, not that it happened; these records are what make the `observed` entries credible. Delete the disposable project only after the archive is copied.
 
 ## Prepared In The Authoring Session
 
