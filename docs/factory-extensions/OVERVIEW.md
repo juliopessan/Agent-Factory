@@ -118,6 +118,8 @@ Approved scope and contracts: [Phase 2 specification](PHASE2_SPEC.md) (FAC-ARCH-
 - **Record** writes one immutable event to `docs/factory/extensions/ledger/<runId>/<sequence>.json` after FAC-CON-2 checks: contiguous sequence, human-only approvals, evidence for observed PASS/FAIL, real commit format or null, non-decreasing timestamps, and gated transitions. Supports `-WhatIf`.
 - **Report** derives each run's outcome, observed/reported/human check counts, stage timestamps, human-review wait, acceptance and cost. Cost per accepted run appears only when every run's cost is known.
 
+Pilot: [Phase 2 pilot runbook](PHASE2_PILOT.md) for FAC-PLAN-1 step 8, with the event helper, governance probes and evidence list.
+
 Limits: the ledger proves what was recorded, not that it happened. Writers can still record false `reported` data; only `observed` entries with evidence files and human references carry stronger provenance. Path and link checks are defensive local checks, not a sandbox.
 
 ## Factory Console

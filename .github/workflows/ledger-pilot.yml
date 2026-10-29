@@ -1,0 +1,26 @@
+name: Ledger Pilot
+
+on:
+  push:
+    branches-ignore: [main]
+    paths:
+      - .github/workflows/ledger-pilot.yml
+      - tests/pilot/**
+      - scripts/Invoke-FactoryManifest.ps1
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pilot:
+    name: FAC-PILOT automated ledger leg
+    runs-on: windows-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Run Validate, Plan, Record and Report in a disposable project
+        shell: pwsh
+        run: ./tests/pilot/ledger-pilot.ps1 -OutputDirectory "$env:RUNNER_TEMP/ledger-pilot-output"
