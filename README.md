@@ -1,10 +1,10 @@
-# Copilot Agent Factory
+# Agent Factory
 
 **A governed, reusable multi-agent delivery model for enterprise software teams using GitHub Copilot.**
 
 > From "AI helps me write code" to "AI agents collaborate within a delivery system we can inspect, govern, and improve."
 
-![Copilot Agent Factory: from individual AI assistance to coordinated delivery through specialist roles, shared contracts, controlled integration and human oversight.](docs/assets/copilot-agent-factory.png)
+![Agent Factory: from individual AI assistance to coordinated delivery through specialist roles, shared contracts, controlled integration and human oversight.](docs/assets/copilot-agent-factory.png)
 
 [Explore the interactive Factory diagram](docs/diagrams/factory-overview.html) | [Diagram sources and validation](docs/diagrams/README.md)
 
@@ -20,7 +20,7 @@ Who owns the API contract? Which agent is allowed to edit a shared configuration
 
 **The constraint is no longer just how quickly code can be generated. It is how reliably work can be coordinated.**
 
-Copilot Agent Factory addresses that coordination problem with a reusable operating model for AI-assisted software delivery. Instead of treating every agent as an unconstrained coding assistant, it assigns explicit roles, bounded responsibilities, file ownership, shared contracts, verification requirements, and human approval points.
+Agent Factory addresses that coordination problem with a reusable operating model for AI-assisted software delivery. Instead of treating every agent as an unconstrained coding assistant, it assigns explicit roles, bounded responsibilities, file ownership, shared contracts, verification requirements, and human approval points.
 
 A coordinating agent establishes the plan. An architect defines the boundaries. Specialized agents work on independent slices. A controlled integration step brings the work together. Tests and reviews provide evidence. People retain authority over consequential decisions.
 
