@@ -1,6 +1,6 @@
 # Phase 3 Specification: Repository Backlog Delivery
 
-This record proposes Phase 3. Status: **PROPOSED, NOT APPROVED FOR IMPLEMENTATION**. It is a planning document only: no command, workflow, integration, token, executor assignment or change to Phase 1 or Phase 2 files is authorized by it. Each workstream below starts only after the user approves its named versions on the [task board](../factory/TASK_BOARD.md).
+This record specifies Phase 3. Status: **APPROVED FOR IMPLEMENTATION**. Approval: user message "aprovado a Phase 3, pode começar pelo piloto", 2026-10-31, recorded on the [task board](../factory/TASK_BOARD.md); the user asked to start with the pilot. The approval covers the versions below. It does not itself authorize any commit, push, token, tracker write or executor assignment in a client or pilot repository; each of those still needs its own action-specific authorization.
 
 Owner: Chief of Staff | Revision: RBD-SPEC-1 draft | Updated: 2026-10-31 | Proposed versions: RBD-ARCH-1, RBD-CON-1, RBD-CON-2, RBD-CON-3, RBD-PLAN-1, RBD-OWN-1
 
