@@ -107,6 +107,10 @@ html [hidden] { display: none; }   /* html prefix: beats .check/.field display r
 @media (max-width: 1000px) { .cells--4 { grid-template-columns: repeat(2, 1fr); } }
 @media (max-width: 820px)  { .cells--3, .cells--2 { grid-template-columns: 1fr; } }
 @media (max-width: 520px)  { .cells--4 { grid-template-columns: 1fr; } }
+@media (min-width: 821px) {
+  .cells--3 > :last-child:nth-child(3n + 1), .cells--2 > :last-child:nth-child(2n + 1) { grid-column: 1 / -1; }
+  .cells--3 > :last-child:nth-child(3n + 2) { grid-column: span 2; }
+}
 .split { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: clamp(32px, 5vw, 72px); align-items: center; }
 @media (max-width: 900px) { .split { grid-template-columns: 1fr; } }
 
@@ -1150,6 +1154,7 @@ details > summary { cursor: pointer; font: 500 12px/1.6 var(--f-mono); }
         accepted: run.Accepted === true,
         firstAttemptAccepted: run.FirstAttemptAccepted === true,
         costUsd: known(run.CostUsd),
+        evidenceState: EVIDENCE_STATES.includes(run.EvidenceState) ? run.EvidenceState : null,
         stageEnteredAtUtc: isObject(run.StageEnteredAtUtc) ? run.StageEnteredAtUtc : {}
       };
     });
@@ -1166,6 +1171,15 @@ details > summary { cursor: pointer; font: 500 12px/1.6 var(--f-mono); }
         provenance: typeof summary.Provenance === 'string' ? summary.Provenance : ''
       }
     };
+  }
+
+  // EvidenceState is optional so reports exported before it existed still load; they show NOT REPORTED.
+  const EVIDENCE_STATES = ['CURRENT', 'STALE', 'NONE'];
+  function evidenceLabel(state) {
+    if (state === 'CURRENT') return { text: 'Evidence current', tone: 'ok' };
+    if (state === 'STALE') return { text: 'Evidence stale', tone: 'warn' };
+    if (state === 'NONE') return { text: 'No observed evidence', tone: 'info' };
+    return { text: 'Evidence NOT REPORTED', tone: 'info' };
   }
 
   function outcomeTone(outcome) {
@@ -1200,7 +1214,7 @@ details > summary { cursor: pointer; font: 500 12px/1.6 var(--f-mono); }
     ];
   }
 
-  root.FactoryConsole = { STAGES, GATES, GATE_AFTER_STAGE, INVARIANTS, validateManifest, buildManifest, buildMcpConfig, normalizeReport, outcomeTone, formatSeconds, formatCost, buildCommands };
+  root.FactoryConsole = { STAGES, GATES, GATE_AFTER_STAGE, INVARIANTS, validateManifest, buildManifest, buildMcpConfig, normalizeReport, evidenceLabel, outcomeTone, formatSeconds, formatCost, buildCommands };
 })(globalThis);
 </script>
 
@@ -1266,6 +1280,12 @@ details > summary { cursor: pointer; font: 500 12px/1.6 var(--f-mono); }
     else notify('Copy failed. Select the text and copy it manually.', 'err');
   }
   function cell(text, className) { return element('td', { text, className }); }
+  function checksCell(run) {
+    const td = cell(`${run.observedPass}/${run.observedTotal} observed PASS · ${run.reportedPass}/${run.reportedTotal} reported`);
+    const evidence = core.evidenceLabel(run.evidenceState);
+    td.append(element('br'), badge(evidence.text, evidence.tone));
+    return td;
+  }
 
   $('manifest-file').addEventListener('change', () => readFile($('manifest-file'), $('manifest-text')));
   $('report-file').addEventListener('change', () => readFile($('report-file'), $('report-text')));
@@ -1415,7 +1435,7 @@ details > summary { cursor: pointer; font: 500 12px/1.6 var(--f-mono); }
         cell(run.workItemId, 'kv'),
         outcome,
         cell(run.lastStage || 'NOT OBSERVED'),
-        cell(`${run.observedPass}/${run.observedTotal} observed PASS · ${run.reportedPass}/${run.reportedTotal} reported`),
+        checksCell(run),
         cell(core.formatSeconds(run.humanReviewWaitSeconds), 'num'),
         cell(core.formatCost(run.costUsd), 'num')
       );

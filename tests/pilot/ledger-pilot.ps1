@@ -169,8 +169,8 @@ $reportJson = $report | ConvertTo-Json -Depth 10
 Set-Content -LiteralPath (Join-Path $OutputDirectory 'report.json') -Encoding utf8 -Value $reportJson
 $first = @($report.Runs | Where-Object RunId -ceq 'RUN-CI-001')[0]
 $second = @($report.Runs | Where-Object RunId -ceq 'RUN-CI-002')[0]
-Add-Result 'Report RUN-CI-001' ($first.Outcome -ceq 'COMPLETED_PASS' -and $first.Accepted -and $first.Checks.observed.PASS -eq 1 -and $first.Violations.Count -eq 0) "Outcome $($first.Outcome); accepted $($first.Accepted); observed PASS $($first.Checks.observed.PASS)"
-Add-Result 'Report RUN-CI-002' ($second.Outcome -ceq 'COMPLETED_FAIL' -and -not $second.Accepted) "Outcome $($second.Outcome); accepted $($second.Accepted)"
+Add-Result 'Report RUN-CI-001' ($first.Outcome -ceq 'COMPLETED_PASS' -and $first.Accepted -and $first.Checks.observed.PASS -eq 1 -and $first.Violations.Count -eq 0 -and $first.EvidenceState -ceq 'CURRENT') "Outcome $($first.Outcome); accepted $($first.Accepted); observed PASS $($first.Checks.observed.PASS); evidence $($first.EvidenceState)"
+Add-Result 'Report RUN-CI-002' ($second.Outcome -ceq 'COMPLETED_FAIL' -and -not $second.Accepted -and $second.EvidenceState -ceq 'STALE') "Outcome $($second.Outcome); accepted $($second.Accepted); evidence $($second.EvidenceState)"
 Add-Result 'Report summary' ($report.Summary.Runs -eq 2 -and $report.Summary.Accepted -eq 1 -and $null -eq $report.Summary.CostPerAcceptedUsd) "Runs $($report.Summary.Runs); accepted $($report.Summary.Accepted); cost per accepted $($report.Summary.CostPerAcceptedUsd ?? 'unknown')"
 
 Copy-Item -LiteralPath (Join-Path $pilot 'docs/factory/extensions/ledger') -Destination (Join-Path $OutputDirectory 'ledger') -Recurse

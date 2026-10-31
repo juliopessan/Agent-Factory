@@ -325,7 +325,8 @@ function Read-RunEvents {
     return ,$events.ToArray()
 }
 
-function Get-TransitionViolations {
+# EvidenceState follows the latest observed PASS or FAIL check: NONE before one exists, STALE once a later commit or contract change invalidates it.
+function Get-TransitionState {
     param([object[]]$Events)
     $violations = [Collections.Generic.List[string]]::new()
     $approvals = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
@@ -337,6 +338,7 @@ function Get-TransitionViolations {
     $fresh = $false
     $observedPass = $false
     $completed = $false
+    $evidence = 'NONE'
     foreach ($entry in $Events) {
         if ($completed) { $violations.Add('Events cannot follow run.completed.'); break }
         switch ($entry.eventType) {
@@ -354,9 +356,16 @@ function Get-TransitionViolations {
             'finding.recorded' { $openFindings++ }
             'finding.dispositioned' { if ($openFindings -eq 0) { $violations.Add('Finding dispositioned without an open finding.') } else { $openFindings-- } }
         }
-        if ($null -ne $entry.subject.commit -and $entry.subject.commit -cne $commit) { $commit = $entry.subject.commit; $fresh = $false }
-        if ($null -ne $entry.subject.contractVersion -and $entry.subject.contractVersion -cne $contract) { $contract = $entry.subject.contractVersion; $fresh = $false }
+        if ($null -ne $entry.subject.commit -and $entry.subject.commit -cne $commit) {
+            $commit = $entry.subject.commit; $fresh = $false
+            if ($evidence -ceq 'CURRENT') { $evidence = 'STALE' }
+        }
+        if ($null -ne $entry.subject.contractVersion -and $entry.subject.contractVersion -cne $contract) {
+            $contract = $entry.subject.contractVersion; $fresh = $false
+            if ($evidence -ceq 'CURRENT') { $evidence = 'STALE' }
+        }
         if ($entry.eventType -ceq 'check.completed') {
+            if ($entry.source.type -ceq 'observed' -and $entry.status -in @('PASS', 'FAIL')) { $evidence = 'CURRENT' }
             if ($entry.status -ceq 'PASS' -and $entry.source.type -ceq 'observed') { $fresh = $true; $observedPass = $true }
             elseif ($entry.status -ceq 'FAIL') { $fresh = $false }
         }
@@ -370,12 +379,19 @@ function Get-TransitionViolations {
             }
         }
     }
-    return ,$violations.ToArray()
+    return [pscustomobject]@{ Violations = $violations.ToArray(); EvidenceState = $evidence }
+}
+
+function Get-TransitionViolations {
+    param([object[]]$Events)
+    $state = Get-TransitionState $Events
+    return ,$state.Violations
 }
 
 function Get-RunSummary {
     param([string]$Identifier, [object[]]$Events)
-    $violations = Get-TransitionViolations $Events
+    $state = Get-TransitionState $Events
+    $violations = $state.Violations
     $checks = [ordered]@{}
     foreach ($type in $sourceTypes) {
         $checks[$type] = [ordered]@{}
@@ -405,7 +421,7 @@ function Get-RunSummary {
     return [pscustomobject]@{
         RunId = $Identifier; WorkItemId = $Events[0].workItemId; Events = $Events.Count
         LastStage = $lastStageName
-        Outcome = $outcome; Violations = $violations; Checks = $checks
+        Outcome = $outcome; Violations = $violations; Checks = $checks; EvidenceState = $state.EvidenceState
         StageEnteredAtUtc = $entered; HumanReviewWaitSeconds = $humanWait
         Accepted = $accepted; FirstAttemptAccepted = ($accepted -and $failedChecks -eq 0); CostUsd = $cost
     }
