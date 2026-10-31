@@ -174,6 +174,10 @@ assert(factoryConsole.validateManifest(escapingManifest).errors.some(error => er
 assert(factoryConsole.buildCommands('C:/Projects/O\u2019Brien', 'RUN-001', './e.json')[0].command.endsWith("'C:/Projects/O\u2019\u2019Brien'"), 'Factory Console must double smart apostrophes for PowerShell');
 assert(consoleReport.runs.length === 1 && factoryConsole.formatCost(consoleReport.summary.costPerAcceptedUsd) === 'NOT OBSERVED' && factoryConsole.formatSeconds(null) === 'NOT OBSERVED', 'Factory Console must keep unknown report values NOT OBSERVED');
 assert.throws(() => factoryConsole.normalizeReport({ Status: 'VALID' }), /REPORTED_LEDGER/, 'Factory Console must reject non-report JSON');
+assert(consoleReport.runs[0].evidenceState === null && factoryConsole.evidenceLabel(null).text === 'Evidence NOT REPORTED', 'Factory Console must load reports without EvidenceState as NOT REPORTED');
+const staleReport = factoryConsole.normalizeReport({ Status: 'REPORTED_LEDGER', Runs: [{ ...consoleRun, Outcome: 'COMPLETED_FAIL', EvidenceState: 'STALE' }], Summary: consoleSummary });
+assert(staleReport.runs[0].evidenceState === 'STALE' && factoryConsole.evidenceLabel('STALE').tone === 'warn', 'Factory Console must flag stale evidence from Report');
+assert(factoryConsole.normalizeReport({ Status: 'REPORTED_LEDGER', Runs: [{ ...consoleRun, EvidenceState: 'FRESH' }], Summary: consoleSummary }).runs[0].evidenceState === null, 'Factory Console must not trust unknown EvidenceState values');
 assert(factoryConsole.buildCommands("C:/Projects/O'Brien", 'RUN-001', './e.json')[0].command.endsWith("'C:/Projects/O''Brien'"), 'Factory Console must quote PowerShell arguments');
 const azureGuide = readFileSync(join(root, 'docs/AZURE_INTEGRATION.md'), 'utf8');
 const azureChecker = readFileSync(join(root, 'scripts/Test-FactoryAzurePrerequisites.ps1'), 'utf8');

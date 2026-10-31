@@ -270,6 +270,7 @@ try {
         Assert-True ($run.Outcome -ceq 'COMPLETED_PASS' -and $run.Accepted -and $run.FirstAttemptAccepted -and $run.Violations.Count -eq 0) 'Accepted run was not summarized.'
         Assert-True ($run.Checks['observed']['PASS'] -eq 1 -and $run.Checks['reported']['PASS'] -eq 0) 'Observed and reported checks were not separated.'
         Assert-True ($run.HumanReviewWaitSeconds -eq 300) 'Human review wait was not derived from timestamps.'
+        Assert-True ($run.EvidenceState -ceq 'CURRENT') 'Evidence for the delivered commit was not reported as CURRENT.'
         Assert-True ($report[0].Summary.CostPerAcceptedUsd -eq 1.5 -and $report[0].Summary.CostUnknownRuns -eq 0) 'Cost per accepted run was not computed from complete data.'
     }
 
@@ -282,6 +283,20 @@ try {
         $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'run.completed' 'human-review' 'PASS')
         $report = @(& $runner -Action Report -ProjectRoot $fixture.Root -RunId 'RUN-001')
         Assert-True ($null -eq $report[0].Summary.CostPerAcceptedUsd -and $report[0].Summary.CostUnknownRuns -eq 1) 'Unknown cost was not kept null.'
+    }
+
+    Test-Case 'Report marks evidence STALE after a later change and NONE without observed checks' {
+        $fixture = New-Fixture
+        Add-ApprovedPrefix $fixture
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'check.completed' 'verification' 'PASS' 'observed' 'ci-run' 'evidence/unit.txt' $commitA)
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'stage.entered' 'verification' -Commit $commitB)
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'run.completed' 'verification' 'FAIL')
+        $stale = @(& $runner -Action Report -ProjectRoot $fixture.Root -RunId 'RUN-001')[0].Runs[0]
+        Assert-True ($stale.Outcome -ceq 'COMPLETED_FAIL' -and $stale.EvidenceState -ceq 'STALE' -and $stale.Checks['observed']['PASS'] -eq 1) 'Invalidated evidence was not reported as STALE.'
+        $other = New-Fixture
+        $null = Add-LedgerEvent $other (New-LedgerEvent $other 'run.started' 'triage')
+        $none = @(& $runner -Action Report -ProjectRoot $other.Root -RunId 'RUN-001')[0].Runs[0]
+        Assert-True ($none.Outcome -ceq 'IN_PROGRESS' -and $none.EvidenceState -ceq 'NONE') 'A run without observed checks was not reported as NONE.'
     }
 
     Test-Case 'Record rejects an agent-sourced approval' {

@@ -123,6 +123,8 @@ Work-item state is derived from events in order and never written directly. `rep
 
 `report` output separates three columns for every measure: observed, reported, unknown. It computes flow (entry to approved spec to first PR to merge, with human-wait time separated when timestamps exist), first-attempt acceptance, governance conformance (required checks executed, valid approvals, ownership violations), and cost per accepted work item only when every cost is known. Agent count, lines of code, and raw PR volume are not reported as productivity.
 
+Amendment 2026-10-31 (pilot finding PILOT-F4, approved by the user: "pode corrigir o F1 e o F4"): `report` adds an `EvidenceState` field per run, derived by the same rules that refuse PASS on invalidated evidence. The field is additive; no existing field or rule changes.
+
 ## FAC-PLAN-1: Implementation Plan
 
 | Step | Work | Exit Evidence |
