@@ -39,7 +39,7 @@ The factory provides a starting point for teams that want to:
 - Keep security, quality, and release decisions within existing engineering governance.
 - Reuse a consistent workflow across repositories while adapting approved runtimes, libraries, and implementation patterns within organizational constraints.
 
-This distribution uses Microsoft-platform delivery constraints defined in the [repository instructions](.github/copilot-instructions.md). Reuse does not authorize agents to select services outside those constraints.
+This distribution uses Microsoft-platform delivery constraints defined in the [repository instructions](.github/copilot-instructions.md). Reuse does not authorize agents to select services outside those constraints. The constraints govern the Factory's own platform, tooling and services, not a client's stack: in a client repository, agents work within the client's existing approved stack, and adding a platform or service beyond it needs that project's architecture approval.
 
 ## What This Project Is And Is Not
 
@@ -182,7 +182,7 @@ These additions make the Factory's structure and runs inspectable as data. They 
 | Component | What It Does | Boundary |
 | --- | --- | --- |
 | [factory.json](factory.json) | Declares stages, human gates, the eight agent profiles, and the contracts by path reference | Gate invariants are fixed; a manifest that weakens one fails validation, and CI checks that every agent profile is referenced exactly once |
-| [Invoke-FactoryManifest.ps1](scripts/Invoke-FactoryManifest.ps1) | `Validate` and `Plan` read the manifest and task board; `Record` writes one immutable, provenance-tagged ledger event; `Report` derives run outcomes | PowerShell 7.2+ built-ins only; observed, reported, and human sources stay separate, and agents cannot record approvals |
+| [Invoke-FactoryManifest.ps1](scripts/Invoke-FactoryManifest.ps1) | `Validate` and `Plan` read the manifest and task board; `Record` writes one immutable, provenance-tagged ledger event; `Report` derives run outcomes and each run's `EvidenceState` (`CURRENT`, `STALE` after a later commit or contract change, or `NONE`) | PowerShell 7.2+ built-ins only; observed, reported, and human sources stay separate, and agents cannot record approvals |
 | [Factory Console](tools/factory-console.html) | Offline browser view of the manifest and saved reports, assisted manifest and Playwright configuration, and copy-only commands | Opens from disk, blocks all network access, never executes anything; `Validate` and Factory CI remain authoritative |
 | [QA browser automation](docs/QA_BROWSER_AUTOMATION.md) | Gives the QA Engineer the pinned Playwright MCP server (`@playwright/mcp@0.0.83`, Chromium by default, isolated profile, vision checks) | The server must be started and trusted in the client; Copilot CLI needs its own MCP configuration; local, DEV, or UAT targets only |
 
@@ -195,7 +195,27 @@ These additions make the Factory's structure and runs inspectable as data. They 
 
 Open `tools/factory-console.html` in a browser, load `factory.json` or the saved `report.json`, and review any generated file in a pull request. The console is styled with the Ledger Design System; its web fonts are not loaded because the page is offline.
 
-**Implementation status: implemented; acceptance pending.** Factory CI passed on the merged candidates (Phase 2 at `c1d23a8`, the console at `be63373`); the PowerShell suites were not run in the authoring session, and hosted CI is their only execution evidence. See the [task board](docs/factory/TASK_BOARD.md) for run references. The independent Security reviews of the run ledger (FAC-003) and the console (UI-002), the Phase 2 pilot, and starting the Playwright server in each client remain NOT RUN. The ledger records what was written, not proof that it happened; only `observed` entries with evidence files and `human` entries with references carry stronger provenance.
+**Implementation status: implemented; acceptance pending.** Factory CI passed on the merged candidates (Phase 2 at `c1d23a8`, the console at `be63373`); the PowerShell suites were not run in the authoring session, and hosted CI is their only execution evidence. See the [task board](docs/factory/TASK_BOARD.md) for run references. The ledger records what was written, not proof that it happened; only `observed` entries with evidence files and `human` entries with references carry stronger provenance.
+
+### Phase 2 Pilot
+
+The [pilot runbook](docs/factory-extensions/PHASE2_PILOT.md) takes an operator through one real work item per client (VS Code and Copilot CLI) in a disposable project: planning and gate approvals before implementation, an event helper for `Record`, governance probes, Report into the Console, and the evidence archive to return.
+
+The automated leg runs in the [Ledger Pilot workflow](.github/workflows/ledger-pilot.yml) on `windows-latest`, on branch pushes that change the workflow, `tests/pilot/` or the ledger script, or on manual dispatch. It runs `Validate`, `Plan`, `Record` and `Report` against a disposable clone with a scripted work item, and checks that seven governance probes (implementation before approval, agent-sourced approval, observed PASS without evidence, malformed commit, overwrite, event after completion, PASS on stale evidence) are refused through the real write path with the ledger byte-for-byte unchanged. Ledger events and raw check output are kept in the job log.
+
+**Pilot status: in progress.** The automated leg passes 34 of 34 checks (latest Ledger Pilot run 41239336916), and the Console loaded its real report. Pilot findings F1, F3 and F4 are fixed, and F2 (choosing a file does not load it) is open. The VS Code and Copilot CLI legs, human acceptance, the independent Security reviews of the run ledger (FAC-003) and the console (UI-002), and starting the Playwright server in each client remain NOT RUN. The automated leg's work item is scripted, not agent-delivered, and its approvals cite the operator's authorization rather than per-gate reviews.
+
+### Phase 3: Repository Backlog Delivery
+
+The [Phase 3 specification](docs/factory-extensions/PHASE3_SPEC.md) is **approved for implementation**. It points the existing gates at a client repository's backlog:
+
+- a measured pilot on 2 or 3 real issues;
+- a read-only repository readiness assessment (`DELIVER_WITH_EVIDENCE`, `FOUNDATION_FIRST` or `ANALYSIS_ONLY`);
+- human-run intake from GitHub Issues or Azure Boards;
+- the Copilot coding agent as executor after `beforeImplementation`;
+- client access, data and security rules.
+
+The approval does not authorize commits, tokens, tracker writes or executor assignment in a client repository; each needs its own authorization. The measured pilot has not started: its repository and issues are still to be chosen, and the Copilot coding agent must be enabled for the pilot account.
 
 ## Repository Contents
 
@@ -215,7 +235,8 @@ Open `tools/factory-console.html` in a browser, load `factory.json` or the saved
 |   |   `-- BOOTSTRAP.prompt.md
 |   |-- workflows/
 |   |   |-- ci.yml
-|   |   `-- deploy-product.yml
+|   |   |-- deploy-product.yml
+|   |   `-- ledger-pilot.yml          # automated Phase 2 pilot leg
 |   |-- workflow-templates/
 |   |   `-- product-cicd.yml
 |   `-- copilot-instructions.md
@@ -232,7 +253,9 @@ Open `tools/factory-console.html` in a browser, load `factory.json` or the saved
 |   |   `-- extensions/VALIDATION.md
 |   `-- factory-extensions/
 |       |-- OVERVIEW.md
-|       `-- PHASE2_SPEC.md
+|       |-- PHASE2_PILOT.md           # Phase 2 pilot runbook and findings
+|       |-- PHASE2_SPEC.md
+|       `-- PHASE3_SPEC.md            # repository backlog delivery
 |-- prompts/
 |   `-- BOOTSTRAP.md
 |-- scripts/
@@ -256,6 +279,8 @@ Open `tools/factory-console.html` in a browser, load `factory.json` or the saved
 |-- tests/
 |   |-- fixtures/
 |   |   `-- product-hook.ps1
+|   |-- pilot/
+|   |   `-- ledger-pilot.ps1          # Ledger Pilot harness
 |   |-- azure-integration.tests.ps1
 |   |-- factory-extension.tests.ps1
 |   |-- factory-manifest.tests.ps1
@@ -453,7 +478,7 @@ Interpret results in context. Complexity, team experience, repository maturity, 
 
 Both chat and CLI are client choices for the same approved-contract workflow. Local implementation acceptance and production release are separate gates. Follow [CI/CD adoption](docs/CICD.md), the [SDLC review](docs/SDLC_REVIEW.md), and the test/release/operations templates.
 
-[Factory CI](.github/workflows/ci.yml) checks this kit on PRs and `main`: YAML/frontmatter and link contracts, installer behavior on PowerShell 7/5.1, simulated pipeline-control regressions, and development-dependency advisories. It also runs the offline Azure contract and Phase 2 manifest and ledger suites with synthetic fixtures, and the structural validator executes the Factory Console's core logic against the shipped `factory.json` and `.vscode/mcp.json`. Its success is not product acceptance. Run locally with `npm ci --ignore-scripts`, `npm run test:structure`, and the PowerShell suites under `tests/` (`setup-local`, `product-pipeline`, `azure-integration`, `factory-manifest`, and the Phase 1 `factory-extension` suite, which CI does not run).
+[Factory CI](.github/workflows/ci.yml) checks this kit on PRs and `main`: YAML/frontmatter and link contracts, installer behavior on PowerShell 7/5.1, simulated pipeline-control regressions, and development-dependency advisories. It also runs the offline Azure contract and Phase 2 manifest and ledger suites with synthetic fixtures, and the structural validator executes the Factory Console's core logic against the shipped `factory.json` and `.vscode/mcp.json`. The separate [Ledger Pilot workflow](.github/workflows/ledger-pilot.yml) runs the automated Phase 2 pilot leg in a disposable clone. Its success is not product acceptance. Run locally with `npm ci --ignore-scripts`, `npm run test:structure`, and the PowerShell suites under `tests/` (`setup-local`, `product-pipeline`, `azure-integration`, `factory-manifest`, and the Phase 1 `factory-extension` suite, which CI does not run).
 
 The [product workflow](.github/workflow-templates/product-cicd.yml) is deliberately inactive until adopted in a real product. It runs PR/push quality and build checks; an authorized manual release on protected `main` promotes one commit-bound ZIP/SBOM/manifest through DEV, UAT, and PROD using the [protected reusable deployment](.github/workflows/deploy-product.yml). Protected environment approvals are required; no resources or credentials are created by YAML.
 
@@ -527,4 +552,5 @@ The promise of AI-assisted engineering is not simply to produce more code. It is
 3. Approve local implementation, require executed acceptance evidence, and capture lessons before broader adoption.
 4. Implement real product hooks and configure protected environments/identities before adopting the DEV/UAT/PROD workflow.
 5. Rehearse nonproduction promotion/recovery, review actual evidence, and obtain separate approval before PROD.
-6. Pilot the Factory Console and run ledger on one real work item, and complete the outstanding independent Security reviews before relying on them.
+6. Run the client legs of the [Phase 2 pilot](docs/factory-extensions/PHASE2_PILOT.md) in VS Code and Copilot CLI, record human acceptance, and complete the outstanding independent Security reviews before relying on the ledger and console.
+7. Choose the repository and issues for the measured [Phase 3](docs/factory-extensions/PHASE3_SPEC.md) pilot, enable the Copilot coding agent for it, and measure lead time, first-attempt acceptance, rework and cost.
