@@ -1,0 +1,24 @@
+# Review ownership for the Agent Factory kit. GitHub requests a review from the
+# listed owner on every pull request that touches a matching path; it becomes a
+# merge requirement only when branch protection enables "Require review from Code
+# Owners". Later, more specific rules override earlier ones.
+
+*                                   @juliopessan
+
+# Governance surface: rules, profiles, gates and the review policy.
+/.github/copilot-instructions.md    @juliopessan
+/.github/agents/                    @juliopessan
+/REVIEW.md                          @juliopessan
+/CLAUDE.md                          @juliopessan
+/factory.json                       @juliopessan
+
+# Pipeline and supply chain.
+/.github/workflows/                 @juliopessan
+/.github/workflow-templates/        @juliopessan
+/package.json                       @juliopessan
+/package-lock.json                  @juliopessan
+
+# Legal and security policy.
+/LICENSE                            @juliopessan
+/SECURITY.md                        @juliopessan
+/.github/CODEOWNERS                 @juliopessan
