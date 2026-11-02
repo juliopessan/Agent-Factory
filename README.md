@@ -239,12 +239,14 @@ The approval does not authorize commits, tokens, tracker writes or executor assi
 |   |   `-- ledger-pilot.yml          # automated Phase 2 pilot leg
 |   |-- workflow-templates/
 |   |   `-- product-cicd.yml
+|   |-- CODEOWNERS
 |   `-- copilot-instructions.md
 |-- .vscode/
 |   `-- mcp.json                      # pinned Playwright MCP for QA
 |-- docs/
 |   |-- AZURE_INTEGRATION.md
 |   |-- CICD.md
+|   |-- HARNESS_ALIGNMENT.md          # harness subsystem mapping
 |   |-- QA_BROWSER_AUTOMATION.md
 |   |-- SDLC_REVIEW.md
 |   |-- assets/ and diagrams/         # README images and Archify sources
@@ -290,8 +292,11 @@ The approval does not authorize commits, tokens, tracker writes or executor assi
 |-- tools/
 |   `-- factory-console.html          # offline Factory Console
 |-- .gitignore
+|-- CHANGELOG.md
 |-- CLAUDE.md
+|-- LICENSE                           # proprietary
 |-- REVIEW.md
+|-- SECURITY.md
 |-- factory.json
 |-- package.json
 |-- package-lock.json
@@ -544,6 +549,10 @@ The promise of AI-assisted engineering is not simply to produce more code. It is
 - [VS Code custom instructions](https://code.visualstudio.com/docs/copilot/customization/custom-instructions)
 
 > Review official documentation for current capabilities and organizational requirements before rollout. This project is an engineering scaffold, not an official GitHub product or endorsement.
+
+## License, Security And Releases
+
+This kit is proprietary; see [LICENSE](LICENSE). No right to use, copy or modify it is granted without a separate written agreement. Report vulnerabilities privately as described in [SECURITY.md](SECURITY.md). Release history and known gaps per version are in [CHANGELOG.md](CHANGELOG.md).
 
 ## Next Steps
 

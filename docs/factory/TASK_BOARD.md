@@ -19,6 +19,7 @@ Users: Factory operators using VS Code and Copilot CLI. Outcome: resumable, insp
 | Platform rule scope | The Microsoft platform rule governs the Factory's own platform, tooling and services, not a client's stack; recorded in `.github/copilot-instructions.md` | User: "A regra vale para a plataforma da Factory e nao para do cliente.", 2026-10-31 | APPROVED |
 | Phase 3 Repository Backlog Delivery | RBD-ARCH-1, RBD-CON-1, RBD-CON-2, RBD-CON-3, RBD-PLAN-1, RBD-OWN-1 in [Phase 3 specification](../factory-extensions/PHASE3_SPEC.md) | User: "aprovado a Phase 3, pode começar pelo piloto", 2026-10-31 | APPROVED |
 | Harness alignment reference | Add `docs/HARNESS_ALIGNMENT.md` mapping the Factory to the seven harness subsystems of arXiv:2609.00006; reference only, gaps recorded as candidates, no workflow change | User: "pode criar o doc e rodar os testes", 2026-11-02; merge to main: "Pode fazer o merge direto", 2026-11-02 | APPROVED; MERGE AUTHORIZED |
+| Repository hygiene (maturity recommendation 2) | Add proprietary `LICENSE`, `.github/CODEOWNERS`, `SECURITY.md`, `CHANGELOG.md`; run `tests/factory-extension.tests.ps1` in Factory CI; open PR, merge after CI passes, tag `v0.1.0` on the merge commit. Historical authorization records that cite the old repository URL are left unchanged | User: "pode começar pela recomendação 2"; license "Proprietária"; publication "PR + merge + tag", 2026-11-02 | APPROVED; MERGE AND TAG AUTHORIZED |
 
 ## EXT-PLAN-1 And EXT-OWN-1
 

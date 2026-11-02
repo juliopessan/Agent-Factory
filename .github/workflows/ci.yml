@@ -42,3 +42,6 @@ jobs:
       - name: Test Phase 2 manifest and run ledger with synthetic fixtures
         shell: pwsh
         run: ./tests/factory-manifest.tests.ps1
+      - name: Test Phase 1 companion with synthetic projects
+        shell: pwsh
+        run: ./tests/factory-extension.tests.ps1
