@@ -18,6 +18,7 @@ Users: Factory operators using VS Code and Copilot CLI. Outcome: resumable, insp
 | Factory Console UI-1 | Single offline HTML file in the repo (`tools/factory-console.html`) with overview, assisted configuration and runs panel; no server, network, execution or gate editing | User: "opção A aprovada, pode implementar com painel de runs", 2026-10-28; exact time unavailable | APPROVED |
 | Platform rule scope | The Microsoft platform rule governs the Factory's own platform, tooling and services, not a client's stack; recorded in `.github/copilot-instructions.md` | User: "A regra vale para a plataforma da Factory e nao para do cliente.", 2026-10-31 | APPROVED |
 | Phase 3 Repository Backlog Delivery | RBD-ARCH-1, RBD-CON-1, RBD-CON-2, RBD-CON-3, RBD-PLAN-1, RBD-OWN-1 in [Phase 3 specification](../factory-extensions/PHASE3_SPEC.md) | User: "aprovado a Phase 3, pode começar pelo piloto", 2026-10-31 | APPROVED |
+| Harness alignment reference | Add `docs/HARNESS_ALIGNMENT.md` mapping the Factory to the seven harness subsystems of arXiv:2609.00006; reference only, gaps recorded as candidates, no workflow change | User: "pode criar o doc e rodar os testes", 2026-11-02 | APPROVED |
 
 ## EXT-PLAN-1 And EXT-OWN-1
 
