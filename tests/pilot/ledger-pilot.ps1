@@ -114,7 +114,12 @@ Add-Content -LiteralPath $board -Encoding utf8 -Value @(
     '| Task | Owner | Write set | Acceptance | State |',
     '| --- | --- | --- | --- | --- |',
     '| PILOT-CI-001 | Pilot harness | src/Get-PilotGreeting.ps1; tests/pilot-greeting.tests.ps1 | tests/pilot-greeting.tests.ps1 exits 0 | SYNTHETIC |',
-    '| PILOT-CI-002 | Pilot harness | src/Get-PilotGreeting.ps1 | Evidence must be fresh for the delivered commit | SYNTHETIC |')
+    '| PILOT-CI-002 | Pilot harness | src/Get-PilotGreeting.ps1 | Evidence must be fresh for the delivered commit | SYNTHETIC |',
+    '', '## Ledger Pilot Approval Register', '',
+    '| Gate | Exact versions/action | Human approval reference | State |',
+    '| --- | --- | --- | --- |',
+    "| beforeImplementation | PILOT-CI-001, PILOT-CI-002 | $approvalReference | APPROVED |",
+    "| beforeMerge | PILOT-CI-001 | $approvalReference | APPROVED |")
 $null = Invoke-Git @('add', '--', 'docs/factory/TASK_BOARD.md')
 $null = Invoke-Git @('commit', '--quiet', '-m', 'Register synthetic pilot work items')
 
@@ -127,6 +132,8 @@ Assert-Rejected 'P1 implementation before approval' (New-PilotEvent $r $w 4 impl
 Assert-Rejected 'P2 agent-sourced approval' (New-PilotEvent $r $w 4 specification approval.recorded -SourceType reported) 'Approvals require a human source.'
 Assert-Rejected 'P3 observed PASS without evidence' (New-PilotEvent $r $w 4 verification check.completed -Status PASS -SourceType observed) 'Observed PASS or FAIL requires an existing evidence file.'
 Assert-Rejected 'P4 malformed commit (format only; existence is not checked)' (New-PilotEvent $r $w 4 triage stage.entered -Commit abc123) 'Commit must be a full lowercase SHA or null'
+Assert-Rejected 'P8 human approval citing a reference absent from the board register' (New-PilotEvent $r $w 4 specification approval.recorded -SourceType human -Kind operator -Reference 'Approved by the executor') 'not an approved row of the task board approval register'
+Assert-Rejected 'P9 verification check before approval, without stage.entered' (New-PilotEvent $r $w 4 verification check.completed -Status FAIL -SourceType reported) 'without a recorded beforeImplementation approval'
 Assert-Recorded (New-PilotEvent $r $w 4 specification approval.recorded -SourceType human -Kind operator -Reference $approvalReference)
 Assert-Recorded (New-PilotEvent $r $w 5 implementation stage.entered)
 Set-Content -LiteralPath (Join-Path $pilot 'src/Get-PilotGreeting.ps1') -Encoding utf8 -Value 'function Get-PilotGreeting { param([Parameter(Mandatory)][string]$Name) "Hello, $Name" }'

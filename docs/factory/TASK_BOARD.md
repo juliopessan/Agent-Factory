@@ -148,7 +148,7 @@ Scope, contracts and plan: [Phase 2 specification](../factory-extensions/PHASE2_
 | --- | --- | --- | --- | --- |
 | FAC-001 | Chief of Staff | factory.json; scripts/Invoke-FactoryManifest.ps1; PHASE2_SPEC.md; this section and the register row; CI step; structural validator assertions | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: HOSTED CI PASS |
 | FAC-002 | QA Engineer (performed by coordinator, not independent) | tests/factory-manifest.tests.ps1 only | FAC-CON-1, FAC-CON-2 | IMPLEMENTED: HOSTED CI PASS |
-| FAC-003 | Security Reviewer | NONE; read-only | FAC-ARCH-1 | NOT RUN: independent Deep review outstanding |
+| FAC-003 | Security Reviewer | NONE; read-only | FAC-ARCH-1 | REPORTED 2026-11-02 (separate-context AI review, source only): BLOCKED by SEC-P3-01 and SEC-P3-02; both fixed in this change (51/51 manifest cases, Ledger Pilot 36/36 locally). Remaining findings are held in the private pilot records until fixed, per SECURITY.md |
 | FAC-004 | Documentation Engineer (performed by coordinator) | OVERVIEW Phase 2 section; README entry point | FAC-PLAN-1 | IMPLEMENTED |
 | FAC-PILOT | Human operator | Disposable project only | FAC-PLAN-1 step 8 | IN PROGRESS (PILOT-F1 and PILOT-F4 fixed on 2026-10-31 under the user's approval "pode corrigir o F1 e o F4"; F4 adds the `EvidenceState` field to FAC-CON-2 `Report`): automated ledger leg PASS (Ledger Pilot run 40797112835 on ae40817, 34/34, synthetic item, probes through the real write path with hash-checked ledger) and Console legs PASS in headless Chromium; finding PILOT-F2 open, F1, F3 and F4 fixed; client legs and human acceptance NOT RUN |
 
@@ -161,9 +161,22 @@ Scope: single offline HTML page, recorded in the approval register above. The co
 | Task | Owner | Exclusive write set | State |
 | --- | --- | --- | --- |
 | UI-001 | Chief of Staff | tools/factory-console.html; OVERVIEW Factory Console section; README entry; this section and register row; structural validator console checks | IMPLEMENTED: HOSTED CI PASS |
-| UI-002 | Security Reviewer | NONE; read-only | NOT RUN: independent review outstanding |
+| UI-002 | Security Reviewer | NONE; read-only | REPORTED 2026-11-02 (separate-context AI review, source only): PASS WITH FINDINGS, none blocking; findings held in the private pilot records until fixed |
 
 Evidence: `npm run test:structure` passes locally and executes the console core against the shipped manifest and MCP configuration. Headless Chromium (preinstalled 1194 build) loaded a synthetic copy of the page with the real manifest and a synthetic report: zero JavaScript errors, all four tabs rendered, and no horizontal overflow at the 500 px minimum viewport (485 px content). Screenshots are session-local evidence only. No user pilot has been observed. Copilot review on PR 2 raised five findings (smart-apostrophe quoting, dark-mode button contrast, backslash contract paths, incomplete reports shown as zero, stale exports after reload); all were verified and fixed, with validator regressions for the logic fixes and a Chromium behavior check for stale exports and incomplete reports. The page was restyled with the Ledger Design System v2 at the user's request. Hosted evidence: Factory CI run 40687426601 passed on candidate be63373, the head merged to main in 91aa013.
+
+## Phase 3 Repository Backlog Delivery Pilot
+
+Scope, contracts and plan: [Phase 3 specification](../factory-extensions/PHASE3_SPEC.md). Pilot start: user message "pode começar o piloto da Phase 3", 2026-11-02. This repository is public, so this section is a pointer: the pilot repository's identity, readiness evidence, security review detail and access rules live in private records inside the pilot repository (user decision "opção b", 2026-11-02). Decisions recorded there: GitHub Issues only; Security review before repository use.
+
+| Step | Task | State |
+| --- | --- | --- |
+| 1 | RBD-001: versions and pilot repository | DONE: recorded in the private pilot records |
+| 2 | RBD-002: FAC-003, UI-002 and pilot access rules | REPORTED: FAC-003 blockers SEC-P3-01 and SEC-P3-02 fixed in this change; access rules recorded privately |
+| 3 | RBD-003: readiness (RBD-CON-1), read-only | DONE: `DELIVER_WITH_EVIDENCE` with conditions; started before step 2 finished at the user's request ("pode seguir para o passo 3", 2026-11-02) |
+| 4 | Intake of 2 or 3 issues (RBD-CON-2) | NOT STARTED: target-branch decision open |
+| 5 | Delivery through gates (RBD-CON-3) | BLOCKED: secret scanning and push protection not yet confirmed |
+| 6 | Results review and automation decision | NOT STARTED |
 
 ## Next Steps
 

@@ -4,6 +4,11 @@ All notable changes to this kit are recorded here. The format follows [Keep a Ch
 
 ## [Unreleased]
 
+### Security
+
+- SEC-P3-02: the run ledger now enforces `beforeImplementation` on every event at `implementation` or later and `beforeMerge` on every `delivery` event, not only on `stage.entered`; `run.completed` PASS requires both approvals.
+- SEC-P3-01 (mitigated): an approval counts only when it cites an approved row of the task board approval register for its gate, and an approval with a non-PASS status revokes the gate. Source types remain writer-attested; see the Phase 2 limits.
+
 ## [0.1.0] - 2026-11-02
 
 First tagged release. It captures the kit as built between 2026-10-22 and 2026-11-02. Status per area is recorded on the [task board](docs/factory/TASK_BOARD.md); a release tag is not a production-readiness or acceptance claim.

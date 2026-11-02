@@ -38,7 +38,7 @@ Design rules:
 2. **Gates are invariants, not options.** `mergeRequiresHumanApproval`, `releaseRequiresSeparateAuthorization`, and `requireEvidenceForPass` must be `true`. A manifest that weakens a gate fails validation, so the file can describe the Factory but cannot relax it.
 3. **Read-only by default.** `validate`, `plan`, and `report` write nothing. Only `record` writes, and only one new event file per call.
 4. **Provenance on every event.** Each event declares whether its source is `observed` (CI, an executed command with an evidence file), `reported` (an agent's claim), or `human` (a decision with a reference). Reports never present `reported` data as observed.
-5. **Agents cannot approve.** Approval events require source `human` and a non-empty human reference; `validate` and `report` flag any approval with another source.
+5. **Agents cannot approve.** Approval events require source `human` and a reference that matches an approved row for that gate in the task board approval register (a table whose first header is `Gate`: gate name, action, reference, and a state containing APPROVED or AUTHORIZED). `record` rejects and `report` flags any other approval; an approval whose status is not PASS revokes that gate. Source types are writer-attested: the board, CODEOWNERS and repository rules, not the ledger, prevent an agent from writing the board or the ledger.
 6. **Same trust boundary as Phase 1.** Local path and link checks, exclusive creation, size limits, and secret-pattern rejection are reused. They are defensive checks, not a sandbox.
 
 ## FAC-CON-1: Manifest Contract
@@ -113,13 +113,13 @@ One immutable JSON file per event at `docs/factory/extensions/ledger/<runId>/<se
 | --- | --- |
 | `eventType` | One of `run.started`, `stage.entered`, `check.completed`, `finding.recorded`, `finding.dispositioned`, `blocker.raised`, `blocker.cleared`, `approval.recorded`, `run.completed` |
 | `status` | `PASS`, `FAIL`, `BLOCKED`, `NOT_RUN`, or null when not applicable |
-| `source.type` | `observed`, `reported`, or `human`. `PASS` and `FAIL` with `observed` require an existing evidence file. `approval.recorded` requires `human` and a non-empty reference. |
+| `source.type` | `observed`, `reported`, or `human`. `PASS` and `FAIL` with `observed` require an existing evidence file. `approval.recorded` requires `human` and a reference that is an approved register row for the gate of its stage (`specification`: beforeImplementation, `human-review`: beforeMerge, `delivery`: beforeRelease). |
 | `subject.commit` | A real commit SHA or null. Never invented; null means the candidate was an uncommitted worktree. |
 | `sequence` | Contiguous from 1 per run; gaps or duplicates fail validation |
 | `metrics` | Optional known numbers; unknown values are null, never zero |
 | Limits | 16 KiB per event, at most 1,000 events per run, secret-pattern rejection, same path and link checks as Phase 1 |
 
-Work-item state is derived from events in order and never written directly. `report` rejects these transitions: implementation without an earlier `approval.recorded` for `beforeImplementation`; `run.completed` with status PASS while a blocker or BLOCKING finding is open; a check event for a commit older than a later contract or code change, since changes invalidate affected evidence.
+Work-item state is derived from events in order and never written directly. `report` rejects these transitions: any event at `implementation` or a later stage without an earlier valid `beforeImplementation` approval, whatever its event type; any `delivery` event without a valid `beforeMerge` approval; `run.completed` with status PASS without both approvals; `run.completed` with status PASS while a blocker or BLOCKING finding is open; a check event for a commit older than a later contract or code change, since changes invalidate affected evidence.
 
 `report` output separates three columns for every measure: observed, reported, unknown. It computes flow (entry to approved spec to first PR to merge, with human-wait time separated when timestamps exist), first-attempt acceptance, governance conformance (required checks executed, valid approvals, ownership violations), and cost per accepted work item only when every cost is known. Agent count, lines of code, and raw PR volume are not reported as productivity.
 
@@ -162,7 +162,7 @@ Acceptance criteria (all required):
 | --- | --- |
 | The manifest becomes a second source of truth that drifts from profiles and templates | References only; `validate` fails on missing files; CI runs it on every change |
 | A manifest edit is used to relax governance | Gate flags are fixed invariants; any weakening fails validation |
-| Ledger entries look like proof when an agent wrote them | Mandatory `source.type`; reports separate observed from reported; approvals require a human source |
+| Ledger entries look like proof when an agent wrote them | Mandatory `source.type`; reports separate observed from reported; approvals must cite an approved board register row; board and ledger paths protected by CODEOWNERS and repository rules outside the executor's write scope |
 | Scope creep toward an executor before evidence exists | No `run` command in Phase 2; executor, routing, and channels require separate FAC versions and approval |
 | Local file checks are mistaken for security enforcement | Documented as defensive checks only; enforcement stays with permissions, branch protection, and CI |
 
