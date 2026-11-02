@@ -165,6 +165,21 @@ Scope: single offline HTML page, recorded in the approval register above. The co
 
 Evidence: `npm run test:structure` passes locally and executes the console core against the shipped manifest and MCP configuration. Headless Chromium (preinstalled 1194 build) loaded a synthetic copy of the page with the real manifest and a synthetic report: zero JavaScript errors, all four tabs rendered, and no horizontal overflow at the 500 px minimum viewport (485 px content). Screenshots are session-local evidence only. No user pilot has been observed. Copilot review on PR 2 raised five findings (smart-apostrophe quoting, dark-mode button contrast, backslash contract paths, incomplete reports shown as zero, stale exports after reload); all were verified and fixed, with validator regressions for the logic fixes and a Chromium behavior check for stale exports and incomplete reports. The page was restyled with the Ledger Design System v2 at the user's request. Hosted evidence: Factory CI run 40687426601 passed on candidate be63373, the head merged to main in 91aa013.
 
+## Phase 3 Repository Backlog Delivery Pilot
+
+Scope, contracts and plan: [Phase 3 specification](../factory-extensions/PHASE3_SPEC.md). Pilot start: user message "pode começar o piloto da Phase 3", 2026-11-02. Decisions in the same exchange: pilot repository `juliopessan/src-amf-python` (private, owned by the operator); GitHub Issues only, Azure Boards deferred; run the outstanding Security reviews before first use of the pilot repository. The coordinating assistant runs sequentially; the Security review runs in a separate context and is not claimed to be human or third-party review.
+
+| Step | Task | Owner | Write set | State |
+| --- | --- | --- | --- | --- |
+| 1 | RBD-001: record versions and pilot repository | Chief of Staff | This section; Phase 3 specification open decisions | DONE: approval references above |
+| 2 | RBD-002: FAC-003, UI-002 and pilot access rules | Security Reviewer (separate context) | NONE; read-only report returned as text, persisted here by Chief of Staff | IN PROGRESS |
+| 3 | RBD-003: readiness assessment (RBD-CON-1), read-only | QA Engineer, performed by coordinator | Readiness record in this repository; no writes to the pilot repository | BLOCKED: waits on step 2 |
+| 4 | Intake of 2 or 3 issues (RBD-CON-2) | Chief of Staff with human selection | Work item records here; no tracker writes | NOT STARTED |
+| 5 | Delivery through gates (RBD-CON-3) | Human operator assigns executor | Pilot repository pull requests only after `beforeImplementation` per item | NOT STARTED |
+| 6 | Results review and automation decision | Human operator | Decision record here | NOT STARTED |
+
+Pilot repository access in this step: none. No read, clone, token or tracker access to `src-amf-python` occurs before step 2 records access rules.
+
 ## Next Steps
 
 1. Commit and push only the verified extension files under the recorded action-specific authorization.
