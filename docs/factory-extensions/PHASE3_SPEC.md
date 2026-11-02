@@ -124,7 +124,7 @@ After the `beforeImplementation` approval for a work item is on the board, a hum
 | Speed numbers are compared across different kinds of work | Use the issue-level metrics above, measured the same way before and with the Factory |
 | A repository without tests yields confident but unverified changes | Readiness outcome gates what can be promised |
 | Client code or secrets leak through tokens, logs or prompts | Least-privilege access, secret scanning, no source in Factory records, Security review before first client use |
-| Executor output is treated as approval | The ledger rejects agent-sourced approvals; merge stays human |
+| Executor output is treated as approval | The ledger accepts an approval only when it cites an approved row of the board approval register (SEC-P3-01 fix); the board and ledger stay outside the executor's write scope; merge stays human |
 
 ## Open Decisions
 

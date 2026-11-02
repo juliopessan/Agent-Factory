@@ -115,12 +115,12 @@ Approved scope and contracts: [Phase 2 specification](PHASE2_SPEC.md) (FAC-ARCH-
 
 - **Validate** checks `factory.json` against the closed FAC-CON-1 schema: every referenced agent profile and contract exists, stages and gates are complete and ordered, and no gate invariant is weakened. Read-only.
 - **Plan** prints the manifest's stages, gates and agents with board-recorded gate references (`MISSING` when none) and quoted task-board rows. Read-only; it never marks work READY or APPROVED.
-- **Record** writes one immutable event to `docs/factory/extensions/ledger/<runId>/<sequence>.json` after FAC-CON-2 checks: contiguous sequence, human-only approvals, evidence for observed PASS/FAIL, real commit format or null, non-decreasing timestamps, and gated transitions. Supports `-WhatIf`.
+- **Record** writes one immutable event to `docs/factory/extensions/ledger/<runId>/<sequence>.json` after FAC-CON-2 checks: contiguous sequence, human-only approvals that cite an approved row of the board's approval register, evidence for observed PASS/FAIL, real commit format or null, non-decreasing timestamps, and gated transitions. Supports `-WhatIf`.
 - **Report** derives each run's outcome, observed/reported/human check counts, evidence state, stage timestamps, human-review wait, acceptance and cost. `EvidenceState` follows the latest observed PASS or FAIL check: `CURRENT`, `STALE` once a later commit or contract change invalidates it, or `NONE` when no observed check exists. Cost per accepted run appears only when every run's cost is known.
 
 Pilot: [Phase 2 pilot runbook](PHASE2_PILOT.md) for FAC-PLAN-1 step 8, with the event helper, governance probes and evidence list.
 
-Limits: the ledger proves what was recorded, not that it happened. Writers can still record false `reported` data; only `observed` entries with evidence files and human references carry stronger provenance. Path and link checks are defensive local checks, not a sandbox.
+Limits: the ledger proves what was recorded, not that it happened. Source types are attested by the writer: anyone who can write the ledger can label an event `observed` or `human`. Approvals are cross-checked against the board's approval register, so a forged approval also requires writing the board; keep the board and the ledger outside the executor's write scope with CODEOWNERS and repository rules. Evidence files are not hashed and the ledger has no hash chain (SEC-P3-04, open). Path and link checks are defensive local checks, not a sandbox.
 
 ## Factory Console
 

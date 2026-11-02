@@ -325,11 +325,36 @@ function Read-RunEvents {
     return ,$events.ToArray()
 }
 
+# Approved references per gate, read from the task board's approval register (a table whose first header is Gate).
+# A row counts when its first cell names the gate, its third cell holds the reference and its fourth cell says
+# APPROVED or AUTHORIZED without NOT. The board, not the ledger writer, is the authority for what was approved.
+function Get-ApprovalRegister {
+    $boardPath = Get-ProjectFile $boardRelativePath
+    if ((Get-Item -LiteralPath $boardPath -Force).Length -gt $boardBytes) { throw 'Task board exceeds the size limit.' }
+    $register = @{}
+    foreach ($gate in $expectedGates) { $register[$gate] = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal) }
+    $tables = Get-MarkdownTables ([IO.File]::ReadAllText($boardPath))
+    foreach ($table in @($tables | Where-Object { $_.Header[0] -ceq 'Gate' -and $_.Header.Count -ge 4 })) {
+        foreach ($row in $table.Rows) {
+            if ($row.Count -lt 4 -or [string]::IsNullOrWhiteSpace($row[2])) { continue }
+            if ($row[3] -notmatch '(?i)\b(?:APPROVED|AUTHORIZED)\b' -or $row[3] -match '(?i)\bNOT\s+(?:APPROVED|AUTHORIZED)\b') { continue }
+            foreach ($gate in $expectedGates) {
+                if ($row[0] -match ('(?i)\b' + [regex]::Escape($gate) + '\b')) { $null = $register[$gate].Add($row[2]) }
+            }
+        }
+    }
+    return $register
+}
+
+# Gates hold for every event at or after the gated stage, not only stage.entered (SEC-P3-02). An approval counts only
+# when its status is null or PASS and its reference is an approved register row for that gate (SEC-P3-01); a later
+# non-PASS approval for the same gate revokes it. Closing a run FAIL, BLOCKED or NOT_RUN never needs an approval.
 # EvidenceState follows the latest observed PASS or FAIL check: NONE before one exists, STALE once a later commit or contract change invalidates it.
 function Get-TransitionState {
     param([object[]]$Events)
     $violations = [Collections.Generic.List[string]]::new()
     $approvals = [Collections.Generic.HashSet[string]]::new([StringComparer]::Ordinal)
+    $gateByStage = @{ 'specification' = 'beforeImplementation'; 'human-review' = 'beforeMerge'; 'delivery' = 'beforeRelease' }
     $implementationIndex = [Array]::IndexOf($expectedStages, 'implementation')
     $openBlockers = 0
     $openFindings = 0
@@ -341,15 +366,24 @@ function Get-TransitionState {
     $evidence = 'NONE'
     foreach ($entry in $Events) {
         if ($completed) { $violations.Add('Events cannot follow run.completed.'); break }
+        if ($entry.eventType -cne 'run.completed') {
+            $what = if ($entry.eventType -ceq 'stage.entered') { "Stage $($entry.stage) entered" } else { "Event $($entry.eventType) at stage $($entry.stage) recorded" }
+            if ([Array]::IndexOf($expectedStages, $entry.stage) -ge $implementationIndex -and -not $approvals.Contains('beforeImplementation')) {
+                $violations.Add("$what without a recorded beforeImplementation approval.")
+            }
+            if ($entry.stage -ceq 'delivery' -and -not $approvals.Contains('beforeMerge')) {
+                $violations.Add("$what without a recorded beforeMerge approval.")
+            }
+        }
         switch ($entry.eventType) {
-            'approval.recorded' { $null = $approvals.Add($entry.stage) }
-            'stage.entered' {
-                if ([Array]::IndexOf($expectedStages, $entry.stage) -ge $implementationIndex -and -not $approvals.Contains('specification')) {
-                    $violations.Add("Stage $($entry.stage) entered without a recorded beforeImplementation approval.")
+            'approval.recorded' {
+                $gate = $gateByStage[$entry.stage]
+                if ($null -eq $gate) { $violations.Add("Approval recorded at stage $($entry.stage), which has no approval gate.") }
+                elseif ($null -ne $entry.status -and $entry.status -cne 'PASS') { $null = $approvals.Remove($gate) }
+                elseif (-not $approvalRegister[$gate].Contains($entry.source.reference)) {
+                    $violations.Add("Approval for $gate cites a reference that is not an approved row of the task board approval register.")
                 }
-                if ($entry.stage -ceq 'delivery' -and -not $approvals.Contains('human-review')) {
-                    $violations.Add('Delivery entered without a recorded beforeMerge approval.')
-                }
+                else { $null = $approvals.Add($gate) }
             }
             'blocker.raised' { $openBlockers++ }
             'blocker.cleared' { if ($openBlockers -eq 0) { $violations.Add('Blocker cleared without an open blocker.') } else { $openBlockers-- } }
@@ -376,6 +410,8 @@ function Get-TransitionState {
                 if ($openFindings -gt 0) { $violations.Add('Run completed PASS with an open finding.') }
                 if (-not $observedPass) { $violations.Add('Run completed PASS without observed check evidence.') }
                 elseif (-not $fresh) { $violations.Add('Run completed PASS on evidence invalidated by a later change.') }
+                if (-not $approvals.Contains('beforeImplementation')) { $violations.Add('Run completed PASS without a recorded beforeImplementation approval.') }
+                if (-not $approvals.Contains('beforeMerge')) { $violations.Add('Run completed PASS without a recorded beforeMerge approval.') }
             }
         }
     }
@@ -449,7 +485,7 @@ if ($Action -eq 'Plan') {
     return
 }
 
-$null = Get-ProjectFile $boardRelativePath
+$approvalRegister = Get-ApprovalRegister
 
 if ($Action -eq 'Record') {
     if ([string]::IsNullOrWhiteSpace($InputPath)) { throw 'Record requires InputPath.' }
@@ -512,6 +548,6 @@ if ($accepted.Count -gt 0 -and $costKnown.Count -eq $runs.Count) {
         CostKnownRuns = $costKnown.Count
         CostUnknownRuns = $runs.Count - $costKnown.Count
         CostPerAcceptedUsd = $costPerAccepted
-        Provenance = 'Timestamps and metrics are recorded by event writers; check counts are split by observed, reported and human sources.'
+        Provenance = 'Source types, timestamps, evidence paths and metrics are attested by event writers, not verified; check counts are split by observed, reported and human sources. Approvals count only when they cite an approved row of the task board approval register.'
     }
 }

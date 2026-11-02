@@ -48,7 +48,7 @@ Plan both work items before any implementation, following the [Factory approval 
 
 You then record two separate decisions per item on that board:
 
-1. Approval of the named contract, plan and ownership versions. Add it as a `| Gate |` register row whose first cell names the manifest gate, for example `beforeImplementation: PILOT-VSC-001`, with your approval reference in the third column. `Plan` reports a gate as `MISSING` unless such a row exists.
+1. Approval of the named contract, plan and ownership versions. Add it as a `| Gate |` register row whose first cell names the manifest gate, for example `beforeImplementation: PILOT-VSC-001`, with your approval reference in the third column and `APPROVED` in the fourth. `Plan` reports a gate as `MISSING` unless such a row exists. `Record` accepts an `approval.recorded` event only when its reference is exactly the third-column text of an approved row for that gate, so use the same text as the `-Reference` values below, for example `Disposable board beforeImplementation: PILOT-VSC-001 approved by the operator`.
 2. Action-specific authorization for commits inside the disposable repository only. It does not cover a push, a merge into any shared branch or anything outside `$Pilot`.
 
 Add `beforeMerge: <item>` only after your review decision in Step 2. Leave `beforeRelease` absent: the pilot has no release, so `Plan` shows it `MISSING` by design.
@@ -114,6 +114,8 @@ Run the governance probes now, at sequence 4, before the real approval. Each mus
 | P2 agent-sourced approval | `Add-PilotEvent $R $W 4 specification approval.recorded -SourceType reported -Probe` | `Approvals require a human source.` |
 | P3 observed PASS without evidence | `Add-PilotEvent $R $W 4 verification check.completed -Status PASS -SourceType observed -Probe` | `Observed PASS or FAIL requires an existing evidence file.` |
 | P4 malformed commit | `Add-PilotEvent $R $W 4 triage stage.entered -Commit abc123 -Probe` | `Commit must be a full lowercase SHA or null; never an invented value.` |
+| P8 approval not on the board register | `Add-PilotEvent $R $W 4 specification approval.recorded -SourceType human -Kind operator -Reference 'Approved by the executor' -Probe` | `not an approved row of the task board approval register` |
+| P9 check before approval, without stage.entered | `Add-PilotEvent $R $W 4 verification check.completed -Status FAIL -Probe` | `without a recorded beforeImplementation approval` |
 
 P4 proves only the format check: `Record` does not ask Git whether a well-formed SHA exists, so the commit you record must come from `git rev-parse` as below.
 

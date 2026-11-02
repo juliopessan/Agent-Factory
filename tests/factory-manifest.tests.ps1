@@ -150,8 +150,25 @@ function Get-RejectedRecord {
     Assert-Rejected { & $runner -Action Record -ProjectRoot $Fixture.Root -InputPath $path } $Pattern
 }
 
+function Add-BoardApprovals {
+    param($Fixture, [string]$State = 'APPROVED')
+    $boardPath = Join-Path $Fixture.Root 'docs/factory/TASK_BOARD.md'
+    $rows = @('', '', '| Gate | Exact versions/action | Human approval reference | State |', '| --- | --- | --- | --- |',
+        "| beforeImplementation | SYN-1 | Synthetic spec approval | $State |",
+        "| beforeMerge | SYN-1 | Synthetic merge approval | $State |") -join "`n"
+    [IO.File]::AppendAllText($boardPath, $rows)
+}
+
+function Write-LedgerFile {
+    param($Fixture, $LedgerEvent)
+    $runDirectory = Join-Path $Fixture.Root ('docs/factory/extensions/ledger/{0}' -f $LedgerEvent.runId)
+    $null = [IO.Directory]::CreateDirectory($runDirectory)
+    Write-Json (Join-Path $runDirectory ('{0:D4}.json' -f $LedgerEvent.sequence)) $LedgerEvent
+}
+
 function Add-ApprovedPrefix {
     param($Fixture)
+    Add-BoardApprovals $Fixture
     $null = Add-LedgerEvent $Fixture (New-LedgerEvent $Fixture 'run.started' 'triage')
     $null = Add-LedgerEvent $Fixture (New-LedgerEvent $Fixture 'stage.entered' 'specification')
     $null = Add-LedgerEvent $Fixture (New-LedgerEvent $Fixture 'approval.recorded' 'specification' -SourceType 'human' -Reference 'Synthetic spec approval')
@@ -403,6 +420,79 @@ try {
         $report = @(Invoke-ReadOnly { & $runner -Action Report -ProjectRoot $fixture.Root })
         $run = $report[0].Runs[0]
         Assert-True ($run.Outcome -ceq 'GOVERNANCE_VIOLATIONS' -and -not $run.Accepted -and $run.Violations.Count -ge 1) 'Hand-edited violation was not flagged.'
+    }
+
+    # SEC-P3-02: the beforeImplementation and beforeMerge gates hold for every event, not only stage.entered.
+    Test-Case 'Record rejects a verification check without a beforeImplementation approval' {
+        $fixture = New-Fixture
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'run.started' 'triage')
+        Get-RejectedRecord $fixture (New-LedgerEvent $fixture 'check.completed' 'verification' 'PASS' 'observed' 'ci-run' 'evidence/unit.txt' $commitA) 'beforeImplementation approval'
+    }
+
+    Test-Case 'Report flags a run that skips stage.entered and completes PASS without beforeImplementation' {
+        $fixture = New-Fixture
+        Add-BoardApprovals $fixture
+        Write-LedgerFile $fixture (New-LedgerEvent $fixture 'run.started' 'triage')
+        Write-LedgerFile $fixture (New-LedgerEvent $fixture 'check.completed' 'verification' 'PASS' 'observed' 'ci-run' 'evidence/unit.txt' $commitA)
+        Write-LedgerFile $fixture (New-LedgerEvent $fixture 'approval.recorded' 'human-review' -SourceType 'human' -Reference 'Synthetic merge approval')
+        Write-LedgerFile $fixture (New-LedgerEvent $fixture 'run.completed' 'human-review' 'PASS')
+        $run = @(Invoke-ReadOnly { & $runner -Action Report -ProjectRoot $fixture.Root })[0].Runs[0]
+        Assert-True ($run.Outcome -ceq 'GOVERNANCE_VIOLATIONS' -and -not $run.Accepted) 'Gate bypass without stage.entered was accepted.'
+        Assert-True (@($run.Violations | Where-Object { $_ -match 'beforeImplementation approval' }).Count -ge 1) 'Missing beforeImplementation was not named.'
+    }
+
+    Test-Case 'Record rejects PASS completion without a beforeMerge approval' {
+        $fixture = New-Fixture
+        Add-ApprovedPrefix $fixture
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'check.completed' 'verification' 'PASS' 'observed' 'ci-run' 'evidence/unit.txt' $commitA)
+        Get-RejectedRecord $fixture (New-LedgerEvent $fixture 'run.completed' 'delivery' 'PASS') 'beforeMerge approval'
+    }
+
+    Test-Case 'Record still closes a run FAIL or BLOCKED without gate approvals' {
+        $fixture = New-Fixture
+        Add-ApprovedPrefix $fixture
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'run.completed' 'delivery' 'FAIL')
+        $run = @(& $runner -Action Report -ProjectRoot $fixture.Root -RunId 'RUN-001')[0].Runs[0]
+        Assert-True ($run.Outcome -ceq 'COMPLETED_FAIL' -and $run.Violations.Count -eq 0) 'A failed run could not be closed without merge approval.'
+    }
+
+    Test-Case 'Record does not count an approval whose status is FAIL' {
+        $fixture = New-Fixture
+        Add-BoardApprovals $fixture
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'run.started' 'triage')
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'approval.recorded' 'specification' 'FAIL' 'human' 'Synthetic spec approval')
+        Get-RejectedRecord $fixture (New-LedgerEvent $fixture 'stage.entered' 'implementation') 'beforeImplementation approval'
+    }
+
+    # SEC-P3-01: an approval must cite an approved row of the task board approval register for its gate.
+    Test-Case 'Record rejects an approval whose reference is not on the approval register' {
+        $fixture = New-Fixture
+        Add-BoardApprovals $fixture
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'run.started' 'triage')
+        Get-RejectedRecord $fixture (New-LedgerEvent $fixture 'approval.recorded' 'specification' -SourceType 'human' -Reference 'Forged by an agent') 'approval register'
+    }
+
+    Test-Case 'Record rejects an approval citing a register row that is not approved' {
+        $fixture = New-Fixture
+        Add-BoardApprovals $fixture 'WAITING'
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'run.started' 'triage')
+        Get-RejectedRecord $fixture (New-LedgerEvent $fixture 'approval.recorded' 'specification' -SourceType 'human' -Reference 'Synthetic spec approval') 'approval register'
+    }
+
+    Test-Case 'Record rejects an approval that cites another gate''s reference' {
+        $fixture = New-Fixture
+        Add-BoardApprovals $fixture
+        $null = Add-LedgerEvent $fixture (New-LedgerEvent $fixture 'run.started' 'triage')
+        Get-RejectedRecord $fixture (New-LedgerEvent $fixture 'approval.recorded' 'specification' -SourceType 'human' -Reference 'Synthetic merge approval') 'approval register'
+    }
+
+    Test-Case 'Report flags a hand-written human approval with a forged reference' {
+        $fixture = New-Fixture
+        Add-BoardApprovals $fixture
+        Write-LedgerFile $fixture (New-LedgerEvent $fixture 'run.started' 'triage')
+        Write-LedgerFile $fixture (New-LedgerEvent $fixture 'approval.recorded' 'specification' -SourceType 'human' -Reference 'Forged by an agent')
+        $run = @(Invoke-ReadOnly { & $runner -Action Report -ProjectRoot $fixture.Root })[0].Runs[0]
+        Assert-True ($run.Outcome -ceq 'GOVERNANCE_VIOLATIONS' -and @($run.Violations | Where-Object { $_ -match 'approval register' }).Count -eq 1) 'Forged approval reference was not flagged.'
     }
 
     Test-Case 'Record requires an existing task board' {
