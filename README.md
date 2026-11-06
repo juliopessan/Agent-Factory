@@ -6,7 +6,7 @@
 
 ![Agent Factory: from individual AI assistance to coordinated delivery through specialist roles, shared contracts, controlled integration and human oversight.](docs/assets/copilot-agent-factory.png)
 
-[Explore the interactive Factory diagram](docs/diagrams/factory-overview.html) | [Diagram sources and validation](docs/diagrams/README.md)
+[Explore the interactive Factory diagram](docs/diagrams/factory-overview.html) | [Operate it in Mastra Studio](studio/README.md) | [Diagram sources and validation](docs/diagrams/README.md)
 
 [GitHub Copilot](https://github.com/features/copilot) | [Human oversight and approval gates](#human-oversight-and-approval-gates) | [What this project is and is not](#what-this-project-is-and-is-not)
 
